@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(DriVRBasestation C CXX)
+project(DriVR C CXX)
 
 # Distributed CMake Find modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
@@ -98,8 +98,8 @@ message(STATUS "LIBS=" ${LIBS})
 message(STATUS "FILES=" ${FILES})
 
 include_directories(${INCLUDES})
-add_executable(Together ${FILES})
-target_link_libraries(Together ${LIBS})
+add_executable(Basestation ${FILES})
+target_link_libraries(Basestation ${LIBS})
 
 
 # Copy SDL2 DLLs
@@ -109,13 +109,13 @@ IF(SDL2_LIBRARY_DIR AND WIN32)
   file(GLOB_RECURSE sdldllfiles "${SDL2_LIBRARY_DIR}/*.dll")
   foreach( sourcefile ${sdldllfiles} )
     # message(STATUS ${sourcefile})
-    add_custom_command(TARGET Together
+    add_custom_command(TARGET Basestation
       POST_BUILD
       COMMAND echo 
         "  ${sourcefile}"
     )
       
-    add_custom_command(TARGET Together
+    add_custom_command(TARGET Basestation
       POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${sourcefile} "${CMAKE_BINARY_DIR}/$<CONFIGURATION>"
     )
@@ -128,13 +128,13 @@ if (WIN32)
   file(GLOB_RECURSE opencvdllfiles "${OpenCV_BIN_PATH}/*.dll")
   foreach( sourcefile ${opencvdllfiles} )
     # message(STATUS ${sourcefile})
-    add_custom_command(TARGET Together
+    add_custom_command(TARGET Basestation
       POST_BUILD
       COMMAND echo 
         "  ${sourcefile}"
     )
       
-    add_custom_command(TARGET Together
+    add_custom_command(TARGET Basestation
       POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${sourcefile} "${CMAKE_BINARY_DIR}/$<CONFIGURATION>"
     )
