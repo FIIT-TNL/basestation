@@ -31,6 +31,7 @@
 #include <iostream>
 #include <fstream>
 #include <thread>
+#include <string>
 using namespace OVR;
 using namespace cv;
 
@@ -299,10 +300,25 @@ int main(int argc, char *argv[])
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 
+
+		//Citanie config suboru so streamami
+		std::string line;
+		std::string streams[2];
+		int streamPor = 0;
+		std::ifstream myfile ("streams.cfg");
+		if (myfile.is_open())
+		{
+			while ( std::getline (myfile,line) )
+			{
+					streams[streamPor] = line;
+					streamPor++;
+			}
+			myfile.close();
+		} else std::cout << "Unable to open file"; 
+
+
 		//http://192.168.1.10:8080/video?dummy=video.mjpg
-		//VideoCapture cap("D:\\Movies\\Don-Jon-(2013)-ENG.avi"); 
-		//VideoCapture cap(0); 
-		VideoCapture cap(0);					//Otvorenie 1. streamu
+		VideoCapture cap(streams[0]);					//Otvorenie 1. streamu
 		if ( !cap.isOpened() )  // if not success, exit program
 		{
 			std::cout << "Cannot open the video stream1" << std::endl;
@@ -310,8 +326,8 @@ int main(int argc, char *argv[])
 		}
 
 				
-				 
-		VideoCapture cap2("http://192.168.43.1:8080/video?dummy=video.mjpg");					//Otvorenie 2. streamu
+			
+		VideoCapture cap2(streams[1]);					//Otvorenie 2. streamu
 		if ( !cap2.isOpened() )  // if not success, exit program
 		{
 			std::cout << "Cannot open the video stream2" << std::endl;
