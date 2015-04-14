@@ -155,7 +155,7 @@ SDL_Event event;
 	 message[0]=3;
 	 sprintf((char*)message+1,"FIIT_TechNoLogic_Motorcontrol_Discover");
 		message_length=strlen("FIIT_TechNoLogic_Motorcontrol_Discover") +1;
-		struct sockaddr from;
+		struct sockaddr_in from;
 		struct sockaddr_in* from2;
 		
 	/*	if( bind(s ,(struct sockaddr *)&si_other , sizeof(si_other)) == SOCKET_ERROR)
@@ -174,7 +174,7 @@ SDL_Event event;
 				perror("sendto");
 				exit(EXIT_FAILURE);
 			}
-		bp=getDataFromVehicle2(s, dataFromVehicle, 5000000, &from);
+		bp=getDataFromVehicle2(s, dataFromVehicle, 5000000, (struct sockaddr*)&from);
 		if(bp<=0)
 		{
 			printf("nic neprislo\n");
