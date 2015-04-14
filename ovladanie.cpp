@@ -16,7 +16,7 @@ SDL_Event event;
     double xd = 0;
     double yd = 0;
     int id =0;
-    int MESSAGE_LENGTH = 0;
+    int message_length = 0;
     int count = 0;
 	Posef pose;
 	float yaw;
@@ -106,7 +106,7 @@ SDL_Event event;
             //return;
         }
 //=====================================================
-	#ifdef _WIN32
+#ifdef _WIN32
     WSADATA wsa;
 #endif
 	SOCKET s;
@@ -114,7 +114,14 @@ SDL_Event event;
 	int slen_other = sizeof(si_other);
 	int slen_local = sizeof(si_local);
 
-	 signed char message[25];    //Snad ziadna sprava nebude dlhsia ako 25B
+	 signed char message[250];    //Snad ziadna sprava nebude dlhsia ako 250B
+	 for(i=0;i<250;i++)
+		 message[i]=0;
+
+	
+
+
+
 #ifdef _WIN32
 	printf("\nInitialising Winsock...");
 	if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
@@ -136,10 +143,68 @@ SDL_Event event;
     memset((char *) &si_other, 0, sizeof(si_other));
 	si_other.sin_family = AF_INET;
 	si_other.sin_port = htons(PORT);
-	si_other.sin_addr.s_addr = inet_addr(OTHER_SIDE);
+	//si_other.sin_addr.s_addr = inet_addr(OTHER_SIDE);
+	si_other.sin_addr.s_addr = inet_addr(ADDRESS_BROADCAST);
 
+	//odosielanie broadcastov - najdenie druhej strany
+	 int bp = 1;
+	 setsockopt(s, SOL_SOCKET, SO_BROADCAST, (const char *)&bp, sizeof(bp));
+		/*message[0]=42;
+		message[1]=42;
+		message[2]=6;*/
+	 message[0]=3;
+	 sprintf((char*)message+1,"FIIT_TechNoLogic_Motorcontrol_Discover");
+		message_length=strlen("FIIT_TechNoLogic_Motorcontrol_Discover") +1;
+		struct sockaddr from;
+		struct sockaddr_in* from2;
+		
+	/*	if( bind(s ,(struct sockaddr *)&si_other , sizeof(si_other)) == SOCKET_ERROR)
+	{
+#ifdef _WIN32
+		printf("Bind failed with error code : %d" , WSAGetLastError());
+#endif
+		perror("bind");
+	}	
+	*/
+	 for(i=0;i<ATTEMPTS;i++)
+	 {
 
-
+		if (sendto(s, (char*)message, message_length , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
+			{
+				perror("sendto");
+				exit(EXIT_FAILURE);
+			}
+		bp=getDataFromVehicle2(s, dataFromVehicle, 5000000, &from);
+		if(bp<=0)
+		{
+			printf("nic neprislo\n");
+			continue;
+		}
+		else
+		{
+			//printf("Port: %d\n", from.sin_port);
+			from2=(struct sockaddr_in*)&from;
+			//processData((char**)&from2, sizeof(sockaddr_in));
+			printf("Adresa: %s\n ", inet_ntoa(from2->sin_addr) );
+			//"FIIT_TechNoLogic_Motorcontrol_ACK"
+			//processData(dataFromVehicle, strlen("FIIT_TechNoLogic_Motorcontrol_ACK"));
+			if((bp=strcmp(*dataFromVehicle, "FIIT_TechNoLogic_Motorcontrol_ACK"))==0)
+				printf("Data: %s\n", *dataFromVehicle);
+			else
+				printf("zle data: %d\n", bp);
+			i=0;
+			break;
+		}
+		
+	}
+	 getchar();
+	 getchar();
+	 exit(1);
+	 si_other.sin_addr = from2->sin_addr;
+		message_length=0;
+		for(i=0;i<=strlen("FIIT_TechNoLogic_Motorcontrol_Discover");i++)
+			message[i]=0;
+		message[0]=message[1]=message[2]=0;
 
 	//inicializacia socketu pre prijimanie dat z vozidla. Port 7777
 	
@@ -199,7 +264,7 @@ SDL_Event event;
 			processData(dataFromVehicle,recv_len);
 
 			
-            MESSAGE_LENGTH = 3;
+            message_length = 3;
             message[0] = 1;
             jskey = SDL_JoystickGetButton(js, A);
             if(jskey==1)
@@ -232,7 +297,7 @@ SDL_Event event;
             if(message[2]<-100)
                     message[2]=-100;
 
-     /*   if (sendto(s, message, MESSAGE_LENGTH , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
+     /*   if (sendto(s, (char*)message, message_length , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
              {
                    perror("sendto");
                    exit(EXIT_FAILURE);
@@ -270,13 +335,13 @@ SDL_Event event;
 					message[1]=y2;
 					message[2]=p2;
 					message[3]=r2;
-					MESSAGE_LENGTH=4;
-		if (sendto(s, (char*)message, MESSAGE_LENGTH , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
+					message_length=4;
+		if (sendto(s, (char*)message, message_length , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
              {
                    perror("sendto");
                    exit(EXIT_FAILURE);
              }
-		MESSAGE_LENGTH=3;
+		message_length=3;
 			 
         p2=r2=y2=0;
         message[0]=message[1]=message[2]=message[3]=0;
@@ -298,11 +363,11 @@ SDL_Event event;
 		dmouseX=(int)floor((dmouseX/1279) * 100.0);
 		dmouseY=(int)floor((dmouseY/799) * 100.0);
 		
-		message[0]=3;
+		message[0]=2;
 		message[1]=(char)floor(dmouseX);
 		message[2]=(char)floor(dmouseY);
-printf("Mys X=%d Y=%d\n", message[1], message[2]);
-		if (sendto(s, (char*)message, MESSAGE_LENGTH , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
+		printf("Mys X=%d Y=%d\n", message[1], message[2]);
+		if (sendto(s, (char*)message, message_length , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
              {
                    perror("sendto");
                    exit(EXIT_FAILURE);
@@ -338,7 +403,7 @@ double ping(int ping_id, SOCKET s, struct sockaddr_in si_other, int slen_other)
 
     int i=0;
     u_long ul_ping_id;
-    int MESSAGE_LENGTH = sizeof(u_long) + 1;
+    int message_length = sizeof(u_long) + 1;
     int BUFLEN = 1500;
     char message[25];
 	int recv_len;
@@ -367,7 +432,7 @@ if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
 	tv.tv_sec = 3 ;
 	tv.tv_usec = 0 ;
 
-    if (sendto(s, message, MESSAGE_LENGTH , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
+    if (sendto(s, message, message_length , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
              {
                    perror("sendto");
                    exit(EXIT_FAILURE);
@@ -458,7 +523,7 @@ int getDataFromVehicle(SOCKET s, char** dataFromVehicle)
 
     int i=0;
     u_long ul_ping_id;
-    int MESSAGE_LENGTH = sizeof(u_long) + 1;
+    int message_length = sizeof(u_long) + 1;
     int BUFLEN = 1500;
 	int recv_len=0;	
 #ifdef _WIN32
@@ -550,3 +615,87 @@ char* getDataOvladanie(){
 
 	return *dataFromVehicle;
 }
+
+
+
+int getDataFromVehicle2(SOCKET s, char** dataFromVehicle, int timeout_us,struct sockaddr *src_addr)
+{
+	#ifdef _WIN32
+    LARGE_INTEGER frequency;
+    LARGE_INTEGER start;
+    LARGE_INTEGER end;
+    double interval;
+#endif
+	fd_set fds ;
+	int n=0 ;
+	struct timeval tv ;
+	int fromlen = sizeof(sockaddr_in);
+
+    int i=0;
+    u_long ul_ping_id;
+    int message_length = sizeof(u_long) + 1;
+    int BUFLEN = 1500;
+	int recv_len=0;	
+#ifdef _WIN32
+
+    WSADATA wsa;
+if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
+	{
+		printf("Failed. Error Code : %d",WSAGetLastError());
+		return NULL;
+	}
+#endif // _WIN32
+
+#ifdef _WIN32
+    QueryPerformanceFrequency(&frequency);
+    QueryPerformanceCounter(&start);				//meranie casu - len pre windows
+#endif
+
+	FD_ZERO(&fds) ;
+	FD_SET(s, &fds) ;
+
+	tv.tv_sec = 0 ;
+	tv.tv_usec = timeout_us ;							//Timeout je 1usec.
+
+	memset(*dataFromVehicle,'\0', BUFLEN);
+		i=0;
+		
+	n = select ( s, &fds, NULL, NULL, &tv );
+			if (n==0)							//Ak nastal timeout, teda nic neprislo
+			{ 
+				//printf("\ntimeout\n");
+				QueryPerformanceCounter(&end);
+				interval = (double) (end.QuadPart - start.QuadPart) / frequency.QuadPart;
+				return -1;
+			}
+			else if( n == -1 )						//Ak nastala nejaka velmi vazna chyba. Toto by nemalo nastat nikdy
+			{
+				perror("select");
+				printf("Failed. Error Code : %d\n",WSAGetLastError());
+				QueryPerformanceCounter(&end);
+				return -2;
+			}			
+
+			if ((recv_len = recvfrom(s, *dataFromVehicle, BUFLEN, 0,(sockaddr*)src_addr, &fromlen  )) != SOCKET_ERROR)
+		{
+#ifdef _WIN32
+			QueryPerformanceCounter(&end);
+			interval = (double) (end.QuadPart - start.QuadPart) / frequency.QuadPart;
+			//printf("Prisli data - Milisekundy: %f -- Ping ID: %d, n=%d\n", interval * 1000, 0, n);
+#endif
+			//printf("recv_len: %d\n", recv_len);
+			return recv_len;
+		}
+		else
+		{
+#ifdef _WIN32
+			QueryPerformanceCounter(&end);
+#endif
+			perror("recvfrom");
+			printf("Chyba: %d\t\t", WSAGetLastError());
+		}		
+	return -3;
+}
+
+
+

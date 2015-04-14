@@ -33,9 +33,11 @@
 
 #define PORT 5566
 #define PI 3.14159265359
+#define ATTEMPTS 5
 //#define OTHER_SIDE "192.168.1.108"
 #define OTHER_SIDE "192.168.43.15"
 #define MIN 13
+#define ADDRESS_BROADCAST "255.255.255.255"
 
 
 using namespace OVR;
@@ -50,6 +52,12 @@ using namespace OVR;
 void ping2();
 //int getDataFromVehicle(SOCKET s, struct sockaddr_in si_other, int slen_other, char** dataFromVehicle);
 int getDataFromVehicle(SOCKET s, char** dataFromVehicle);
+int getDataFromVehicle2(SOCKET s, char** dataFromVehicle, int timeout_us,struct sockaddr *src_addr);
+
 int processData(char** dataFromVehicle, int recv_len);
 int ovladanief();
 char* getDataOvladanie();
+
+
+
+
