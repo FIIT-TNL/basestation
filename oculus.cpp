@@ -37,22 +37,36 @@ using namespace cv;
 
 GLuint textureCV;
 int prvyKrat = 0;
-GLuint cvImage(Mat texture_cv);
+
+int ifBlack(Mat framBlack);
+Mat rotate(Mat src, double angle);
 int load_textures();
 GLuint textures[2];
+int syncDone = 0;
 int teplota = 0, rychlost = 0, vlhkost = 0;
 char** dataVypis;
+double synFrame1, synFrame2;
 
 Mat recentFrame;
 Mat recentFrame2;
 
+struct recFrame{
+  Mat recentFrame;
+  double poradieFramu;
+} recent1, recent2,testF;
+
+int testFrameNext = 0;
+std::thread t2;
+int sync1Done = 0, sync2Done = 0;
+GLuint cvImage(recFrame texture_cv, int camera);
 void task1(VideoCapture cap1 )						//Nacitava framy z kamery1 a uklada do recentFrame
 {
 	bool bSuccess;
 	while(true){
 		try
 		{
-			bSuccess = cap1.read(recentFrame);
+			bSuccess = cap1.read(recent1.recentFrame);
+			recent1.poradieFramu = cap1.get(CV_CAP_PROP_POS_FRAMES );
 		}catch(int e){}
 		
 	}
@@ -62,10 +76,13 @@ void task2(VideoCapture cap2 )						//Nacitava framy z kamery2 a uklada do recen
 {
 	bool bSuccess;
 	while(true){
+		
 		try
 		{
-			bSuccess = cap2.read(recentFrame2);
+			bSuccess = cap2.read(recent2.recentFrame);
+			recent2.poradieFramu = cap2.get(CV_CAP_PROP_POS_FRAMES );
 		}catch(int e){}
+	
 	}
 }
 
@@ -107,7 +124,7 @@ int main(int argc, char *argv[])
         int w = hmd->Resolution.w;
         int h = hmd->Resolution.h;
  
-        SDL_Window *window = SDL_CreateWindow("Oculus Rift SDL2 OpenGL Demo", x, y, w, h, flags);
+        SDL_Window *window = SDL_CreateWindow("DriVR 0.7", x, y, w, h, flags);
  
         SDL_GLContext context = SDL_GL_CreateContext(window);
  
@@ -302,7 +319,7 @@ int main(int argc, char *argv[])
 
 
 		//Citanie config suboru so streamami
-		std::string line;
+	/*	std::string line;
 		std::string streams[2];
 		int streamPor = 0;
 		std::ifstream myfile ("streams.cfg");
@@ -315,28 +332,30 @@ int main(int argc, char *argv[])
 			}
 			myfile.close();
 		} else std::cout << "Unable to open file"; 
-
-
-		//http://192.168.1.10:8080/video?dummy=video.mjpg
-		VideoCapture cap(streams[0]);					//Otvorenie 1. streamu
-		if ( !cap.isOpened() )  // if not success, exit program
-		{
-			std::cout << "Cannot open the video stream1" << std::endl;
-         
-		}
-
-				
-			
-		VideoCapture cap2(streams[1]);					//Otvorenie 2. streamu
-		if ( !cap2.isOpened() )  // if not success, exit program
-		{
-			std::cout << "Cannot open the video stream2" << std::endl;
-        }
+*/
 		
-		std::thread t1(task1, cap);				//Start threadov a citanie stale novych framov z kamery
-		std::thread t2(task2, cap2);
-		std::thread t3(task3Ovaldanie);			//Start threadu, ktory riesi ovladanie vozidla a komunikaciu
+		
+			//http://192.168.1.10:8080/video?dummy=video.mjpg
+			VideoCapture cap(0);					//Otvorenie 1. streamu
+			if ( !cap.isOpened() )  // if not success, exit program
+			{
+				std::cout << "Cannot open the video stream1" << std::endl;
+         
+			}
+		
+			
+		
+			VideoCapture cap2("http://192.168.1.10:8080/video?dummy=video.mjpg");					//Otvorenie 2. streamu
+			if ( !cap2.isOpened() )  // if not success, exit program
+			{
+				std::cout << "Cannot open the video stream2" << std::endl;
+			}
+		
 
+			std::thread t1(task1, cap);				//Start threadov a citanie stale novych framov z kamery
+			std::thread t2(task2, cap2);
+			std::thread t3(task3Ovaldanie);			//Start threadu, ktory riesi ovladanie vozidla a komunikaciu
+		
 		glGenTextures(2, textures);
 
 
@@ -354,7 +373,7 @@ int main(int argc, char *argv[])
         glEnable(GL_DEPTH_TEST);
  
         bool running = true;
- 
+
         while (running == true)														//Spustenie cyklu
         {
                 SDL_Event event;
@@ -385,7 +404,7 @@ int main(int argc, char *argv[])
 
 				//Prva verzia nacitavania framov
 				//Mat frame[2];
-				////Mat frame2;
+				//Mat frame2;
 				////cap.retrieve(frame);
 				//bool bSuccess = cap.read(frame[0]);
 				//bool bSuccess2 = cap2.read(frame[1]);
@@ -413,20 +432,29 @@ int main(int argc, char *argv[])
  
                 ovrPosef eyeRenderPose[2];
  
+
+
+
                 for (int eyeIndex = 0; eyeIndex < ovrEye_Count; eyeIndex++)							//Pre kazde oko
                 {
 
 					if (eyeIndex == 1)																//Pre oko 1 spusti funkciu cvImage pre frame z kamery1 a opacne
 					{
-						cvImage(recentFrame2);		//na pravu polku najnovsi frame z kamery2
+						cvImage(recent2,2);		// na lavu obraz z kamery1
+						//std::cout << recent2.poradieFramu << "\n";
+						
+						
+						
 					}else{
-						cvImage(recentFrame);		// na lavu obraz z kamery1
+						cvImage(recent1,1);		// na lavu obraz z kamery1
+						//std::cout << recent1.poradieFramu << "::";
+						
 					}
 
 					
                     ovrEyeType eye = hmd->EyeRenderOrder[eyeIndex];
-                    //eyeRenderPose[eye] = ovrHmd_GetEyePose(hmd, eye);		//Oculus SDK 0.4.2
-					eyeRenderPose[eye] = ovrHmd_GetHmdPosePerEye(hmd, eye);	//Oculus SDK 0.4.3
+                    eyeRenderPose[eye] = ovrHmd_GetEyePose(hmd, eye);		//Oculus SDK 0.4.2
+					//eyeRenderPose[eye] = ovrHmd_GetHmdPosePerEye(hmd, eye);	//Oculus SDK 0.4.3
 
 						
 					ovrPosef eyeRenderPoseNula;											//Vytvorenie objektu ovrPosef a naplnenie orientacie, potrebne na to, aby obraz nestal na jednom mieste v priestore, ale bol pre ocami
@@ -436,9 +464,9 @@ int main(int argc, char *argv[])
 					eyeRenderPoseNula.Orientation.y = 0;
 
 					//Oculus SDK 0.4.2
-                    //Matrix4f MVPMatrix = Matrix4f(ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.01f, 10000.0f, true)) * Matrix4f::Translation(eyeRenderDesc[eye].ViewAdjust) * Matrix4f(Quatf(eyeRenderPoseNula.Orientation).Inverted());
+                    Matrix4f MVPMatrix = Matrix4f(ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.01f, 10000.0f, true)) * Matrix4f::Translation(eyeRenderDesc[eye].ViewAdjust) * Matrix4f(Quatf(eyeRenderPoseNula.Orientation).Inverted());
 					//Oculus SDK 0.4.3
-					Matrix4f MVPMatrix = Matrix4f(ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.01f, 10000.0f, true)) * Matrix4f::Translation(eyeRenderDesc[eye].HmdToEyeViewOffset) * Matrix4f(Quatf(eyeRenderPoseNula.Orientation).Inverted());
+					//Matrix4f MVPMatrix = Matrix4f(ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.01f, 10000.0f, true)) * Matrix4f::Translation(eyeRenderDesc[eye].HmdToEyeViewOffset) * Matrix4f(Quatf(eyeRenderPoseNula.Orientation).Inverted());
 
 
 					
@@ -479,13 +507,17 @@ int main(int argc, char *argv[])
  
         SDL_Quit();
  
+		t1.join();
+		t2.join();
+		t3.join();
+
         return 0;
 }
 
 
 
 
-GLuint cvImage(Mat texture_cv){     //Funkcia na konverziu OpenCV Mat na OpenGL texturu a pridanie textu
+GLuint cvImage(recFrame texture_cv, int camera){     //Funkcia na konverziu OpenCV Mat na OpenGL texturu a pridanie textu
 	cv::Mat flipped;
 	teplota++;
 	rychlost++;
@@ -495,22 +527,92 @@ GLuint cvImage(Mat texture_cv){     //Funkcia na konverziu OpenCV Mat na OpenGL 
 	char vlkosta[250] = "";
 	sprintf(vlkosta, "Vlhkost %d", rychlost/80);
 	char rychlosta[5000] = "";
-	int dlzka = recentFrame.rows;
-	int sirka = recentFrame.cols;
-
-
-	sprintf(rychlosta, "Data %s",getDataOvladanie());
+	int dlzka = recent1.recentFrame.rows;
+	int sirka = recent1.recentFrame.cols;
 	
-	cv::putText(texture_cv, teplotaa, cvPoint(sirka/3,200), FONT_HERSHEY_COMPLEX_SMALL, 0.6, cvScalar(200,200,250), 0.6, CV_AA);	//Vlozenie textu do OpenCV Mat
-	cv::putText(texture_cv, "sdsdsds", cvPoint(sirka/3,220), FONT_HERSHEY_COMPLEX_SMALL, 0.6, cvScalar(200,200,250), 0.6, CV_AA);		//Vlozenie textu do OpenCV Mat
-	cv::putText(texture_cv, rychlosta, cvPoint(sirka/3,240), FONT_HERSHEY_COMPLEX_SMALL, 0.6, cvScalar(200,200,250), 0.6, CV_AA);	//Vlozenie textu do OpenCV Mat
+	Mat opacne;
+	Mat text = Mat::zeros(texture_cv.recentFrame.rows, texture_cv.recentFrame.cols, texture_cv.recentFrame.type());;
+	double alpha = 0.5; double beta; 
+
+	//std::cout << "\n" << camera << "-" << ifBlack(texture_cv.recentFrame) << "\n";
+	//std::cout << "\n" << camera << "-" << ifBlack(texture_cv.recentFrame) << "\n";
+	/*if(ifBlack(texture_cv.recentFrame) == 1 && syncDone < 2 && sync1Done == 0){
+		if(camera == 1){
+			synFrame1 = texture_cv.poradieFramu;
+			std::cout << "\nFRAME SYNC1 " << synFrame1 << "\n";
+			syncDone++;
+			sync1Done++;
+		}
+	}
+	
+
+	if(ifBlack(texture_cv.recentFrame) == 1 && camera == 2 && sync2Done == 0){
+			synFrame2 = texture_cv.poradieFramu;
+			std::cout << "\nFRAME SYNC2 " << synFrame2 << "\n";
+			syncDone++;
+			sync2Done++;
+	}
 
 
-	cv::flip(texture_cv, flipped, 0);				//Otocenie textury
-	texture_cv = flipped;       
+	if(syncDone > 1){
+		testFrameNext = texture_cv.poradieFramu + synFrame2 - synFrame1;	
+	}
+	if (synFrame1 > synFrame2){ 
+		std::cout << "\n"<< synFrame1 << "****" << synFrame2 << "\n";
+	}else{
+		std::cout << "\n "<< synFrame2 << "****" <<  synFrame1 << "\n";
+	}*/
+
+	//Mat imageOrient = imread("E:\\Download\\orient.png");
+	//std::cout << "\n MYYYYS" << getDataMouse().mysX << std::endl;
+	/*Point spodBod(sirka/2, 350);
+	Point vrchBod(sirka/2-50, 350);
+	Point rot = vrchBod - spodBod;
+	Point rotated;*/
+	/*int angle = 45;
+	rotated.x = rot.x*cos(45*3.14/180) - rot.y*sin(45*3.14/180);
+	rotated.y = rot.x*sin(45*3.14/180) + rot.y*cos(45*3.14/180);
+
+	line( text, Point( sirka/100*getDataMouse().mysX, 300), Point( sirka/2, 350), Scalar( 0, 255, 255 ),  3, 8 );*/
+	//imageOrient.copyTo(text(cv::Rect(400,200,imageOrient.cols, imageOrient.rows)));
+
+	sprintf(rychlosta, "Data %s", getDataOvladanie());
+	
+	cv::putText(text, teplotaa, cvPoint(sirka/3,200), FONT_HERSHEY_COMPLEX_SMALL, 0.7, cvScalar(200,200,250), 0.6, CV_AA);	//Vlozenie textu do OpenCV Mat
+	cv::putText(text, "sdsdsds", cvPoint(sirka/3,220), FONT_HERSHEY_COMPLEX_SMALL, 0.7, cvScalar(200,200,250), 0.6, CV_AA);		//Vlozenie textu do OpenCV Mat
+	cv::putText(text, rychlosta, cvPoint(sirka/3,240), FONT_HERSHEY_COMPLEX_SMALL, 0.7, cvScalar(100,100,100), 0.6, CV_AA);	//Vlozenie textu do OpenCV Mat
+
+	
+	//if (camera ==2) texture_cv.recentFrame = texture_cv.recentFrame + text;
+	
+
+	cv::flip(texture_cv.recentFrame, flipped, 0);				//Otocenie textury
+	texture_cv.recentFrame = flipped;       
+	//		
+
+	if (camera == 2){ 
+		Mat textFlip2;
+		cv::flip(text, textFlip2, 0);
+		texture_cv.recentFrame = texture_cv.recentFrame + textFlip2;
+		
+	}
+	
+	//imageOrient.copyTo(texture_cv.recentFrame.rowRange(1, 51).colRange(3, 53));
+	
+	if(camera == 1){
+		opacne = rotate(texture_cv.recentFrame,180);
+		texture_cv.recentFrame=opacne;
+
+		cv::flip(text, flipped, 0);				//Otocenie textury
+		text = flipped;       
+		texture_cv.recentFrame = texture_cv.recentFrame + text;
+	}
+		
+	
+	
 
 
-
+	
 
 	if(prvyKrat == 0){
 		glGenTextures(1, &textureCV);                  //Ak sa funkcia spustila 1. krat, tak vztvor OpenGL texturu, treba spustit len raz, inac sa zahlti RAM
@@ -524,12 +626,43 @@ GLuint cvImage(Mat texture_cv){     //Funkcia na konverziu OpenCV Mat na OpenGL 
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S , GL_REPEAT );
     glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, texture_cv.cols, texture_cv.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, texture_cv.data);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, texture_cv.recentFrame.cols, texture_cv.recentFrame.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, texture_cv.recentFrame.data);
 		
 	
-	texture_cv.release();    
+	texture_cv.recentFrame.release();   
+	text.release();
 	flipped.release();
 	return textureCV;
   
 }
 
+Mat rotate(Mat src, double angle)
+{
+    Mat dst;
+    cv::Point2f pt(src.cols/2., src.rows/2.);    
+    Mat r = getRotationMatrix2D(pt, angle, 1.0);
+    warpAffine(src, dst, r, cv::Size(src.cols, src.rows));
+    return dst;
+}
+
+int ifBlack(Mat framBlack){
+	Mat obr;
+	cvtColor(framBlack,obr,CV_BGR2GRAY );
+	int TotalNumberOfPixels = obr.rows * obr.cols;
+	int count_black = 0;
+	for( int y = 0; y < obr.rows; y++ ) {
+		for( int x = 0; x < obr.cols; x++ ) {
+			if ( obr.at<uchar>(y,x) < 3 ) {
+				count_black++;
+			} 
+		}
+	}
+
+
+	if (TotalNumberOfPixels-count_black < TotalNumberOfPixels/3 && count_black != 0){
+		count_black = 1;	//cierne
+	}else{
+		count_black = 0;	//nie
+	}
+	return count_black;
+}
