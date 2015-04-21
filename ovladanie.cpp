@@ -166,6 +166,7 @@ SDL_Event event;
 		perror("bind");
 	}	
 	*/
+		
 	 for(i=0;i<ATTEMPTS;i++)
 	 {
 
@@ -197,14 +198,19 @@ SDL_Event event;
 		}
 		
 	}
-	 getchar();
-	 getchar();
-	 exit(1);
-	 si_other.sin_addr = from2->sin_addr;
-		message_length=0;
-		for(i=0;i<=strlen("FIIT_TechNoLogic_Motorcontrol_Discover");i++)
-			message[i]=0;
-		message[0]=message[1]=message[2]=0;
+	
+//	 getchar();
+//	 getchar();
+	 //exit(1);
+	if(i==0)
+		si_other.sin_addr = from2->sin_addr;
+	else
+		si_other.sin_addr.s_addr=inet_addr(OTHER_SIDE);
+	i=0;
+	message_length=0;
+	for(i=0;i<=strlen("FIIT_TechNoLogic_Motorcontrol_Discover");i++)
+		message[i]=0;
+	message[0]=message[1]=message[2]=0;
 
 	//inicializacia socketu pre prijimanie dat z vozidla. Port 7777
 	
@@ -278,6 +284,8 @@ SDL_Event event;
             xd=(double)SDL_JoystickGetAxis(js, X);
             yd=(double)SDL_JoystickGetAxis(js, Y);
 
+			printf("Packa X=%f ... Packa Y=%f\n", xd, yd);
+
 			x_axis= floor(100 * xd/SHRT_MAX + 0.5);
             y_axis=- floor(100 * yd/SHRT_MAX + 0.5);
 
@@ -331,7 +339,7 @@ SDL_Event event;
 					r2 = (signed char)abs(floor((r2/PI) * 100 + 0.5));
 	*/
 
-					printf("yaw: %f, eyePitch: %f, eyeRoll: %f, y2=%d, p2=%d, r2=%d\n", yaw, eyePitch, eyeRoll, y2, p2, r2);
+	//				printf("yaw: %f, eyePitch: %f, eyeRoll: %f, y2=%d, p2=%d, r2=%d\n", yaw, eyePitch, eyeRoll, y2, p2, r2);
 					message[1]=y2;
 					message[2]=p2;
 					message[3]=r2;
