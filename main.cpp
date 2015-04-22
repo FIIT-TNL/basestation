@@ -47,7 +47,6 @@ int main(int argc, char *argv[])
 	std::cout << "testing finished" << std::endl;
 	system("PAUSE");
 
-	//Ovladanie ovl(cfg);
 
 	//Oculus oc(cfg, NULL);//&ovl);
 	//ovl.start();
@@ -58,9 +57,13 @@ int main(int argc, char *argv[])
 	//ovl.join();
 	//doTask();
 
-	Oculus oculus(cfg);
+	Ovladanie ovl(cfg);
+	Oculus oculus(cfg, &ovl);
+	ovl.start();
 	oculus.start();
 	oculus.join();
+	ovl.terminate();
+	ovl.join();
 
 
 	delete cfg;

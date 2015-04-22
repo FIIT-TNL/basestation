@@ -1,12 +1,40 @@
-#include "stdafx.h"
 #include "ovladanie.hpp"
 
 
-char** dataFromVehicle;
+#ifdef _WIN32
+#define X 2             //osi packa zlava doprava
+#define Y 3             //a zhora dole
+#define A 10            //tlacidlo A
+#endif
+#ifdef __linux__
+#define X 3                 //Osi. Toto plati pre MINT
+#define Y 4
+#define A 0
+#endif
 
-int ovladanief()
+#define PORT 5566
+#define PI 3.14159265359
+#define ATTEMPTS 5
+//#define OTHER_SIDE "192.168.1.108"
+//#define OTHER_SIDE "192.168.43.15"
+#define OTHER_SIDE "192.168.56.101"
+#define MIN 13
+#define ADDRESS_BROADCAST "255.255.255.255"
+
+using namespace OVR;
+
+//char** dataFromVehicle;
+
+//int processData(char** dataFromVehicle, int recv_len);
+
+
+Ovladanie::Ovladanie(DrivrConfig *cfg)
+	: cfg(cfg)
+{}
+
+void Ovladanie::doTask()
 {
-
+	std::cout << "-- Controls starting" << std::endl;
 
 SDL_Event event;
     short done = 0;
@@ -97,7 +125,8 @@ SDL_Event event;
     else
         {
             SDL_JoystickClose(js);
-            return 2;
+            //return 2;
+			return;
         }
     }
     if(i==0)
@@ -127,14 +156,16 @@ SDL_Event event;
 	if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
 	{
 		printf("Failed. Error Code : %d",WSAGetLastError());
-		return 1;
+		//return 1;
+		return;
 	}
 	printf("Initialised.\n");
 #endif
 	if((s = socket(AF_INET , SOCK_DGRAM , 0 )) == INVALID_SOCKET)
 	{
 		perror("socket");
-		return 2;
+		//return 2;
+		return;
 	}
 	
 
@@ -175,7 +206,7 @@ SDL_Event event;
 				perror("sendto");
 				exit(EXIT_FAILURE);
 			}
-		bp=getDataFromVehicle2(s, dataFromVehicle, 5000000, (struct sockaddr*)&from);
+		bp=getDataFromVehicle(s, dataFromVehicle, 5000000, (struct sockaddr*)&from);
 		if(bp<=0)
 		{
 			printf("nic neprislo\n");
@@ -228,7 +259,8 @@ SDL_Event event;
 	if (WSAStartup(MAKEWORD(2,2),&wsa2) != 0)
 	{
 		printf("Failed. Error Code : %d",WSAGetLastError());
-		return 3;
+		//return 3;
+		return;
 	}
 #endif	
 
@@ -261,7 +293,7 @@ SDL_Event event;
 
 
 
-	while(true){
+	while (!this->isTerminateRequested()){
 		count++;
 				//ping(count, s, si_other, slen_other);            			
 
@@ -397,7 +429,7 @@ SDL_Event event;
 
 
 
-double ping(int ping_id, SOCKET s, struct sockaddr_in si_other, int slen_other)
+double Ovladanie::ping(int ping_id, SOCKET s, struct sockaddr_in si_other, int slen_other)
 {
 #ifdef _WIN32
     LARGE_INTEGER frequency;
@@ -499,7 +531,7 @@ if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
 
 
 
-void ping2()
+void Ovladanie::ping2()
 {
 	char command[21];
 	strcpy(command, "ping ");
@@ -517,7 +549,7 @@ void ping2()
 
 
 
-int getDataFromVehicle(SOCKET s, char** dataFromVehicle)
+int Ovladanie::getDataFromVehicle(SOCKET s, char** dataFromVehicle)
 {
 	#ifdef _WIN32
     LARGE_INTEGER frequency;
@@ -595,7 +627,7 @@ if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
 }
 
 
-int processData(char** dataFromVehicle, int recv_len)
+int Ovladanie::processData(char** dataFromVehicle, int recv_len)
 {
 	int i=0;
 	if(recv_len==-1)
@@ -616,7 +648,7 @@ int processData(char** dataFromVehicle, int recv_len)
 	return 0;
 }
 
-char* getDataOvladanie(){
+char* Ovladanie::getDataOvladanie(){
 	
 	//sprintf(*dataFromVehicle, "fgdgdfgdfgdfg");
 
@@ -626,7 +658,7 @@ char* getDataOvladanie(){
 
 
 
-int getDataFromVehicle2(SOCKET s, char** dataFromVehicle, int timeout_us,struct sockaddr *src_addr)
+int Ovladanie::getDataFromVehicle(SOCKET s, char** dataFromVehicle, int timeout_us, struct sockaddr *src_addr)
 {
 	#ifdef _WIN32
     LARGE_INTEGER frequency;

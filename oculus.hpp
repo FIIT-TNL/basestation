@@ -1,6 +1,10 @@
 #ifndef OCULUS_HPP
 #define OCULUS_HPP
-/*
+
+#include "drivrconfig.hpp"
+#include "task.hpp"
+#include "ovladanie.hpp"
+
 
 //#define NOMINMAX
 #include "stdafx.h"
@@ -24,66 +28,49 @@
 #include "SDL.h"
 #define GLEW_STATIC
 #include "GL/glew.h"
-
-
 #define OVR_OS_WIN32
 #include "OVR_CAPI_GL.h"
 #include "Kernel/OVR_Math.h"
 #include "SDL_syswm.h"
 
-#include <iostream>
-#include <fstream>
-#include <thread>
-#include <string>
-
-
-#include "drivrconfig.hpp"
-#include "ovladanie.hpp"
-*/
-//#include <opencv2/core/core.hpp>
-
-//using namespace cv;
-
-#include "drivrconfig.hpp"
-#include "task.hpp"
+#include "framereader.hpp"
+using namespace cv;
 
 class Oculus : public Task {
 private:
 	DrivrConfig *cfg;
-	//Ovladanie *control;
-	//-----------
-	/*GLuint textureCV;
+	Ovladanie *control;
+	
+	GLuint textureCV;
 	int prvyKrat = 0;
-
-	int ifBlack(Mat framBlack);
-	Mat rotate(Mat src, double angle);
-	int load_textures();
 	GLuint textures[2];
 	int syncDone = 0;
 	int teplota = 0, rychlost = 0, vlhkost = 0;
 	char** dataVypis;
 	double synFrame1, synFrame2;
-
 	Mat recentFrame;
 	Mat recentFrame2;
 
-	struct recFrame{
-		Mat recentFrame;
-		double poradieFramu;
-	} recent1, recent2, testF;
+	RecentFrame recent1, recent2, testF;
 
 	int testFrameNext = 0;
 	std::thread t2;
 	int sync1Done = 0, sync2Done = 0;
-	//---*/
-	//GLuint cvImage(recFrame texture_cv, int camera);
-	//Mat rotate(Mat src, double angle);
-	//int ifBlack(Mat framBlack);
+
+	FrameReader *fr1 = NULL;
+	FrameReader *fr2 = NULL;
+
+	// fns
+	GLuint cvImage(RecentFrame texture_cv, int camera);
+	Mat rotate(Mat src, double angle);
+	int load_textures();
+	int ifBlack(Mat framBlack);
 
 protected:
 	void doTask();
 
 public:
-	Oculus(DrivrConfig *cfg/*, Ovladanie *control*/);
+	Oculus(DrivrConfig *cfg, Ovladanie *control);
+	~Oculus();
 };
 #endif // OCULUS_HPP

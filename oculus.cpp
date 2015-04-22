@@ -2,70 +2,72 @@
 
 // opengl.cpp : Defines the entry point for the console application.
 //
-//#define NOMINMAX
-#include "stdafx.h"
-#pragma warning(disable : 4996)
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <iostream>
-#include <opencv2/imgproc/imgproc.hpp>  
-#include "opencv2/core/core.hpp"
-#include "opencv2/flann/miniflann.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/photo/photo.hpp"
-#include "opencv2/video/video.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/objdetect/objdetect.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/ml/ml.hpp"
-#include "opencv2/core/core_c.h"
-#include "opencv2/highgui/highgui_c.h"
-
-#include "SDL.h"
-#define GLEW_STATIC
-#include "GL/glew.h"
-#define OVR_OS_WIN32
-#include "OVR_CAPI_GL.h"
-#include "Kernel/OVR_Math.h"
-#include "SDL_syswm.h"
-#include "ovladanie.hpp"
+////#define NOMINMAX
+//#include "stdafx.h"
+//#pragma warning(disable : 4996)
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/highgui/highgui.hpp>
+//#include <iostream>
+//#include <opencv2/imgproc/imgproc.hpp>  
+//#include "opencv2/core/core.hpp"
+//#include "opencv2/flann/miniflann.hpp"
+//#include "opencv2/imgproc/imgproc.hpp"
+//#include "opencv2/photo/photo.hpp"
+//#include "opencv2/video/video.hpp"
+//#include "opencv2/features2d/features2d.hpp"
+//#include "opencv2/objdetect/objdetect.hpp"
+//#include "opencv2/calib3d/calib3d.hpp"
+//#include "opencv2/ml/ml.hpp"
+//#include "opencv2/core/core_c.h"
+//#include "opencv2/highgui/highgui_c.h"
+//
+//#include "SDL.h"
+//#define GLEW_STATIC
+//#include "GL/glew.h"
+//#define OVR_OS_WIN32
+//#include "OVR_CAPI_GL.h"
+//#include "Kernel/OVR_Math.h"
+//#include "SDL_syswm.h"
+//#include "ovladanie.hpp"
 
 //
+#include "framereader.hpp"
 
+#include <OVR_Version.h>
 
 #include <iostream>
 #include <fstream>
-#include <thread>
 #include <string>
 using namespace OVR;
 using namespace cv;
 
 
-GLuint textureCV;
-int prvyKrat = 0;
+//GLuint textureCV;
+//int prvyKrat = 0;
+//
+//int ifBlack(Mat framBlack);
+//Mat rotate(Mat src, double angle);
+//int load_textures();
+//GLuint textures[2];
+//int syncDone = 0;
+//int teplota = 0, rychlost = 0, vlhkost = 0;
+//char** dataVypis;
+//double synFrame1, synFrame2;
+//
+//Mat recentFrame;
+//Mat recentFrame2;
+//
+//struct recFrame{
+//  Mat recentFrame;
+//  double poradieFramu;
+//} recent1, recent2,testF;
+//
+//int testFrameNext = 0;
+//std::thread t2;
+//int sync1Done = 0, sync2Done = 0;
+//GLuint cvImage(recFrame texture_cv, int camera);
 
-int ifBlack(Mat framBlack);
-Mat rotate(Mat src, double angle);
-int load_textures();
-GLuint textures[2];
-int syncDone = 0;
-int teplota = 0, rychlost = 0, vlhkost = 0;
-char** dataVypis;
-double synFrame1, synFrame2;
-
-Mat recentFrame;
-Mat recentFrame2;
-
-struct recFrame{
-  Mat recentFrame;
-  double poradieFramu;
-} recent1, recent2,testF;
-
-int testFrameNext = 0;
-std::thread t2;
-int sync1Done = 0, sync2Done = 0;
-GLuint cvImage(recFrame texture_cv, int camera);
-
+/*
 void task1(VideoCapture cap1 )						//Nacitava framy z kamery1 a uklada do recentFrame
 {
 	bool bSuccess;
@@ -97,13 +99,30 @@ void task3Ovaldanie()								//Spusti funkciu ovladanief(), ktora riesi komunika
 {
 		ovladanief();
 }
+*/
 
-Oculus::Oculus(DrivrConfig *cfg)
-	: cfg(cfg)
+Oculus::Oculus(DrivrConfig *cfg, Ovladanie *control)
+	: cfg(cfg), control(control)
 {}
+
+Oculus::~Oculus()
+{
+	if (fr1) {
+		fr1->terminate();
+		fr1->join();
+		delete fr1;
+	}
+	if (fr2) {
+		fr2->terminate();
+		fr2->join();
+		delete fr2;
+	}
+}
 
 void Oculus::doTask()
 {
+		std::cout << "-- Oculus starting" << std::endl;
+
         SDL_Init(SDL_INIT_VIDEO);											//Oculus magic
  
         int x = SDL_WINDOWPOS_CENTERED;
@@ -343,28 +362,49 @@ void Oculus::doTask()
 			myfile.close();
 		} else std::cout << "Unable to open file"; 
 */
-		
+			
+		//Otvorenie 1. streamu
+		VideoCapture cap;
+		if (this->cfg->isStream1Int()) {
+			cap = VideoCapture(this->cfg->getStream1Int());
+		} else {
+			cap = VideoCapture(this->cfg->getStream1());
+		}
+		if (!cap.isOpened()) {
+			std::cout << "Cannot open the video stream1" << std::endl;
+
+		}
+
+		//Otvorenie 2. streamu
+		VideoCapture cap2;
+		if (this->cfg->isStream2Int()) {
+			cap2 = VideoCapture(this->cfg->getStream2Int());
+		}
+		else {
+			cap2 = VideoCapture(this->cfg->getStream2());
+		}
+		if (!cap2.isOpened()) {
+			std::cout << "Cannot open the video stream2" << std::endl;
+
+		}
 		
 			//http://192.168.1.10:8080/video?dummy=video.mjpg
-			VideoCapture cap(0);					//Otvorenie 1. streamu
-			if ( !cap.isOpened() )  // if not success, exit program
-			{
-				std::cout << "Cannot open the video stream1" << std::endl;
-         
-			}
-		
 			
-		
-			VideoCapture cap2("http://192.168.1.10:8080/video?dummy=video.mjpg");					//Otvorenie 2. streamu
-			if ( !cap2.isOpened() )  // if not success, exit program
-			{
-				std::cout << "Cannot open the video stream2" << std::endl;
-			}
-		
+			//VideoCapture cap2("http://192.168.1.10:8080/video?dummy=video.mjpg");					//Otvorenie 2. streamu
+			//VideoCapture cap2(0);
+			
 
-			std::thread t1(task1, cap);				//Start threadov a citanie stale novych framov z kamery
-			std::thread t2(task2, cap2);
-			std::thread t3(task3Ovaldanie);			//Start threadu, ktory riesi ovladanie vozidla a komunikaciu
+			// Old threads
+			//std::thread t1(task1, cap);				//Start threadov a citanie stale novych framov z kamery
+			//std::thread t2(task2, cap2);
+			//std::thread t3(task3Ovaldanie);			//Start threadu, ktory riesi ovladanie vozidla a komunikaciu
+
+			// Start frame reader threads 
+			fr1 = new FrameReader(&cap, &recent1);
+			fr1->start();
+			fr2 = new FrameReader(&cap2, &recent2);
+			fr2->start();
+	
 		
 		glGenTextures(2, textures);
 
@@ -384,7 +424,7 @@ void Oculus::doTask()
  
         bool running = true;
 
-        while (running == true)														//Spustenie cyklu
+		while (running == true && !this->isTerminateRequested())					//Spustenie cyklu
         {
                 SDL_Event event;
  
@@ -461,11 +501,13 @@ void Oculus::doTask()
 						
 					}
 
-					
-                    ovrEyeType eye = hmd->EyeRenderOrder[eyeIndex];
-                    //eyeRenderPose[eye] = ovrHmd_GetEyePose(hmd, eye);		//Oculus SDK 0.4.2
-					eyeRenderPose[eye] = ovrHmd_GetHmdPosePerEye(hmd, eye);	//Oculus SDK 0.4.3
+					ovrEyeType eye = hmd->EyeRenderOrder[eyeIndex];	
 
+#if (OVR_MAJOR_VERSION == 0 && OVR_MINOR_VERSION == 4 && OVR_BUILD_VERSION == 2) //Oculus SDK 0.4.2
+					eyeRenderPose[eye] = ovrHmd_GetEyePose(hmd, eye);		//Oculus SDK 0.4.2
+#else
+					eyeRenderPose[eye] = ovrHmd_GetHmdPosePerEye(hmd, eye);	//Oculus SDK >= 0.4.3
+#endif 					
 						
 					ovrPosef eyeRenderPoseNula;											//Vytvorenie objektu ovrPosef a naplnenie orientacie, potrebne na to, aby obraz nestal na jednom mieste v priestore, ale bol pre ocami
 					eyeRenderPoseNula.Orientation.w = 1;
@@ -473,16 +515,14 @@ void Oculus::doTask()
 					eyeRenderPoseNula.Orientation.z = 0;
 					eyeRenderPoseNula.Orientation.y = 0;
 
-					//Oculus SDK 0.4.2
-                    //Matrix4f MVPMatrix = Matrix4f(ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.01f, 10000.0f, true)) * Matrix4f::Translation(eyeRenderDesc[eye].ViewAdjust) * Matrix4f(Quatf(eyeRenderPoseNula.Orientation).Inverted());
-					//Oculus SDK 0.4.3
+#if (OVR_MAJOR_VERSION == 0 && OVR_MINOR_VERSION == 4 && OVR_BUILD_VERSION == 2) //Oculus SDK 0.4.2
+					Matrix4f MVPMatrix = Matrix4f(ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.01f, 10000.0f, true)) * Matrix4f::Translation(eyeRenderDesc[eye].ViewAdjust) * Matrix4f(Quatf(eyeRenderPoseNula.Orientation).Inverted());
+#else //Oculus SDK >= 0.4.3
 					Matrix4f MVPMatrix = Matrix4f(ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.01f, 10000.0f, true)) * Matrix4f::Translation(eyeRenderDesc[eye].HmdToEyeViewOffset) * Matrix4f(Quatf(eyeRenderPoseNula.Orientation).Inverted());
+#endif 
 
-
-					
 					glUniformMatrix4fv(MVPMatrixLocation, 1, GL_FALSE, &MVPMatrix.Transposed().M[0][0]);
- 
-					
+ 					
                     glViewport(eyeRenderViewport[eye].Pos.x, eyeRenderViewport[eye].Pos.y, eyeRenderViewport[eye].Size.w, eyeRenderViewport[eye].Size.h);
 							
 					glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);		//Vykresli texturu
@@ -517,9 +557,9 @@ void Oculus::doTask()
  
         SDL_Quit();
  
-		t1.join();
-		t2.join();
-		t3.join();
+		//t1.join();
+		//t2.join();
+		//t3.join();
 
         //return 0;
 		return;
@@ -528,7 +568,7 @@ void Oculus::doTask()
 
 
 
-GLuint cvImage(recFrame texture_cv, int camera){     //Funkcia na konverziu OpenCV Mat na OpenGL texturu a pridanie textu
+GLuint Oculus::cvImage(RecentFrame texture_cv, int camera){     //Funkcia na konverziu OpenCV Mat na OpenGL texturu a pridanie textu
 	cv::Mat flipped;
 	teplota++;
 	rychlost++;
@@ -587,7 +627,12 @@ GLuint cvImage(recFrame texture_cv, int camera){     //Funkcia na konverziu Open
 	line( text, Point( sirka/100*getDataMouse().mysX, 300), Point( sirka/2, 350), Scalar( 0, 255, 255 ),  3, 8 );*/
 	//imageOrient.copyTo(text(cv::Rect(400,200,imageOrient.cols, imageOrient.rows)));
 
-	sprintf(rychlosta, "Data %s", getDataOvladanie());
+	if (control) {
+		sprintf(rychlosta, "Data %s", control->getDataOvladanie());
+	}
+	else {
+		sprintf(rychlosta, "NO Control");
+	}
 	
 	cv::putText(text, teplotaa, cvPoint(sirka/3,200), FONT_HERSHEY_COMPLEX_SMALL, 0.7, cvScalar(200,200,250), 0.6, CV_AA);	//Vlozenie textu do OpenCV Mat
 	cv::putText(text, "sdsdsds", cvPoint(sirka/3,220), FONT_HERSHEY_COMPLEX_SMALL, 0.7, cvScalar(200,200,250), 0.6, CV_AA);		//Vlozenie textu do OpenCV Mat
@@ -647,16 +692,16 @@ GLuint cvImage(recFrame texture_cv, int camera){     //Funkcia na konverziu Open
   
 }
 
-Mat rotate(Mat src, double angle)
+Mat Oculus::rotate(Mat src, double angle)
 {
     Mat dst;
     cv::Point2f pt(src.cols/2., src.rows/2.);    
     Mat r = getRotationMatrix2D(pt, angle, 1.0);
-    warpAffine(src, dst, r, cv::Size(src.cols, src.rows));
+	    warpAffine(src, dst, r, cv::Size(src.cols, src.rows));
     return dst;
 }
 
-int ifBlack(Mat framBlack){
+int Oculus::ifBlack(Mat framBlack){
 	Mat obr;
 	cvtColor(framBlack,obr,CV_BGR2GRAY );
 	int TotalNumberOfPixels = obr.rows * obr.cols;

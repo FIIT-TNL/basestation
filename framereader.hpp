@@ -6,16 +6,21 @@
 
 using namespace cv;
 
+struct RecentFrame {
+	Mat recentFrame;
+	double poradieFramu;
+};
+
 class FrameReader : public Task {
 private:
 	VideoCapture *cap;
-	Mat *recentFrame;
+	RecentFrame *recentFrame;
 
 protected:
 	void doTask();
 
 public:
-	FrameReader(VideoCapture *cap, Mat *recentFrame);
+	FrameReader(VideoCapture *cap, RecentFrame *recentFrame);
 };
 
 #endif // FRAMEREADER_HPP

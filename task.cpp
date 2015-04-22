@@ -37,7 +37,9 @@ bool Task::start() {
 		delete tmp_thr;
 	}
 
+	_terminate_req = false;
 	thr = new thread(&Task::_doTaskInternal, this);
+
 	return true;
 }
 

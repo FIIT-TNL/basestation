@@ -22,6 +22,8 @@ set(FILES
   main.cpp
   drivrconfig.hpp
   drivrconfig.cpp
+  framereader.hpp
+  framereader.cpp
   task.hpp
   task.cpp
   oculus.hpp
