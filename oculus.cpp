@@ -1,3 +1,5 @@
+#include "oculus.hpp"
+
 // opengl.cpp : Defines the entry point for the console application.
 //
 //#define NOMINMAX
@@ -26,7 +28,10 @@
 #include "OVR_CAPI_GL.h"
 #include "Kernel/OVR_Math.h"
 #include "SDL_syswm.h"
-#include "Ovladanie.h"
+#include "ovladanie.hpp"
+
+//
+
 
 #include <iostream>
 #include <fstream>
@@ -34,6 +39,7 @@
 #include <string>
 using namespace OVR;
 using namespace cv;
+
 
 GLuint textureCV;
 int prvyKrat = 0;
@@ -59,6 +65,7 @@ int testFrameNext = 0;
 std::thread t2;
 int sync1Done = 0, sync2Done = 0;
 GLuint cvImage(recFrame texture_cv, int camera);
+
 void task1(VideoCapture cap1 )						//Nacitava framy z kamery1 a uklada do recentFrame
 {
 	bool bSuccess;
@@ -91,9 +98,11 @@ void task3Ovaldanie()								//Spusti funkciu ovladanief(), ktora riesi komunika
 		ovladanief();
 }
 
+Oculus::Oculus(DrivrConfig *cfg)
+	: cfg(cfg)
+{}
 
-
-int main(int argc, char *argv[])
+void Oculus::doTask()
 {
         SDL_Init(SDL_INIT_VIDEO);											//Oculus magic
  
@@ -173,7 +182,8 @@ int main(int argc, char *argv[])
  
             SDL_Quit();
  
-            return 0;
+            //return 0;
+			return;
         }
  
         ovrFovPort eyeFov[2] = { hmd->DefaultEyeFov[0], hmd->DefaultEyeFov[1] };
@@ -453,8 +463,8 @@ int main(int argc, char *argv[])
 
 					
                     ovrEyeType eye = hmd->EyeRenderOrder[eyeIndex];
-                    eyeRenderPose[eye] = ovrHmd_GetEyePose(hmd, eye);		//Oculus SDK 0.4.2
-					//eyeRenderPose[eye] = ovrHmd_GetHmdPosePerEye(hmd, eye);	//Oculus SDK 0.4.3
+                    //eyeRenderPose[eye] = ovrHmd_GetEyePose(hmd, eye);		//Oculus SDK 0.4.2
+					eyeRenderPose[eye] = ovrHmd_GetHmdPosePerEye(hmd, eye);	//Oculus SDK 0.4.3
 
 						
 					ovrPosef eyeRenderPoseNula;											//Vytvorenie objektu ovrPosef a naplnenie orientacie, potrebne na to, aby obraz nestal na jednom mieste v priestore, ale bol pre ocami
@@ -464,9 +474,9 @@ int main(int argc, char *argv[])
 					eyeRenderPoseNula.Orientation.y = 0;
 
 					//Oculus SDK 0.4.2
-                    Matrix4f MVPMatrix = Matrix4f(ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.01f, 10000.0f, true)) * Matrix4f::Translation(eyeRenderDesc[eye].ViewAdjust) * Matrix4f(Quatf(eyeRenderPoseNula.Orientation).Inverted());
+                    //Matrix4f MVPMatrix = Matrix4f(ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.01f, 10000.0f, true)) * Matrix4f::Translation(eyeRenderDesc[eye].ViewAdjust) * Matrix4f(Quatf(eyeRenderPoseNula.Orientation).Inverted());
 					//Oculus SDK 0.4.3
-					//Matrix4f MVPMatrix = Matrix4f(ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.01f, 10000.0f, true)) * Matrix4f::Translation(eyeRenderDesc[eye].HmdToEyeViewOffset) * Matrix4f(Quatf(eyeRenderPoseNula.Orientation).Inverted());
+					Matrix4f MVPMatrix = Matrix4f(ovrMatrix4f_Projection(eyeRenderDesc[eye].Fov, 0.01f, 10000.0f, true)) * Matrix4f::Translation(eyeRenderDesc[eye].HmdToEyeViewOffset) * Matrix4f(Quatf(eyeRenderPoseNula.Orientation).Inverted());
 
 
 					
@@ -511,7 +521,8 @@ int main(int argc, char *argv[])
 		t2.join();
 		t3.join();
 
-        return 0;
+        //return 0;
+		return;
 }
 
 

@@ -1,8 +1,10 @@
 #include "stdafx.h"
+#include <iostream>
 #include "ovladanie.hpp"
 
 
 char** dataFromVehicle;
+
 
 int ovladanief()
 {
@@ -207,6 +209,7 @@ SDL_Event event;
 	else
 		si_other.sin_addr.s_addr=inet_addr(OTHER_SIDE);
 	i=0;
+	//si_other.sin_addr = from2->sin_addr;
 	message_length=0;
 	for(i=0;i<=strlen("FIIT_TechNoLogic_Motorcontrol_Discover");i++)
 		message[i]=0;
@@ -284,7 +287,7 @@ SDL_Event event;
             xd=(double)SDL_JoystickGetAxis(js, X);
             yd=(double)SDL_JoystickGetAxis(js, Y);
 
-			printf("Packa X=%f ... Packa Y=%f\n", xd, yd);
+			//printf("Packa X=%f ... Packa Y=%f\n", xd, yd);
 
 			x_axis= floor(100 * xd/SHRT_MAX + 0.5);
             y_axis=- floor(100 * yd/SHRT_MAX + 0.5);
@@ -305,7 +308,7 @@ SDL_Event event;
             if(message[2]<-100)
                     message[2]=-100;
 
-     /*   if (sendto(s, (char*)message, message_length , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
+      /*  if (sendto(s, (char*)message, message_length , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
              {
                    perror("sendto");
                    exit(EXIT_FAILURE);
@@ -326,29 +329,36 @@ SDL_Event event;
 					
 
 
-					y2=(signed char)floor(((yaw+PI)/(2*PI))*100);
+					//y2=(signed char)floor(((yaw+PI)/(2*PI))*100); //360
+					y2=(signed char)floor(((yaw+(PI/2))/(PI))*100);	//180 
+					//std::cout << (int)y2 << std::endl;
 					p2=(signed char)floor(((eyePitch+(PI/2))/(PI))*100);
 					r2=(signed char)floor(((eyeRoll+PI)/(2*PI))*100);
 
-			/*	y2 = (signed char)abs(floor(((y2+PI)/(PI*2)) * 100 + 0.5));
-			p2 = (signed char)abs(floor(((p2+PI/2)/PI) * 100 + 0.5));
+					/*	y2 = (signed char)abs(floor(((y2+PI)/(PI*2)) * 100 + 0.5));
+					p2 = (signed char)abs(floor(((p2+PI/2)/PI) * 100 + 0.5));
 					r2 = (signed char)abs(floor(((r2+PI)/(PI*2)) * 100 + 0.5));*/
 	
 					/*y2 = (signed char)abs(floor((y2/PI) * 100 + 0.5));
 					p2 = (signed char)abs(floor((p2/PI) * 100 + 0.5));
 					r2 = (signed char)abs(floor((r2/PI) * 100 + 0.5));
-	*/
+					*/
+			
 
-	//				printf("yaw: %f, eyePitch: %f, eyeRoll: %f, y2=%d, p2=%d, r2=%d\n", yaw, eyePitch, eyeRoll, y2, p2, r2);
+
+					//printf("yaw: %f, eyePitch: %f, eyeRoll: %f, y2=%d, p2=%d, r2=%d\n", yaw, eyePitch, eyeRoll, y2, p2, r2);
+					
 					message[1]=y2;
 					message[2]=p2;
 					message[3]=r2;
 					message_length=4;
+					
 		if (sendto(s, (char*)message, message_length , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
              {
                    perror("sendto");
                    exit(EXIT_FAILURE);
              }
+					
 		message_length=3;
 			 
         p2=r2=y2=0;
@@ -371,15 +381,17 @@ SDL_Event event;
 		dmouseX=(int)floor((dmouseX/1279) * 100.0);
 		dmouseY=(int)floor((dmouseY/799) * 100.0);
 		
+		
+
 		message[0]=2;
 		message[1]=(char)floor(dmouseX);
 		message[2]=(char)floor(dmouseY);
-		printf("Mys X=%d Y=%d\n", message[1], message[2]);
-		if (sendto(s, (char*)message, message_length , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
+		//printf("Mys X=%d Y=%d\n", message[1], message[2]);
+	/*	if (sendto(s, (char*)message, message_length , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
              {
                    perror("sendto");
                    exit(EXIT_FAILURE);
-             }
+             }*/
 
 
 
@@ -620,9 +632,10 @@ char* getDataOvladanie(){
 	
 	//sprintf(*dataFromVehicle, "fgdgdfgdfgdfg");
 
-  //TODO: Osetrit mutexami
+
 	return *dataFromVehicle;
 }
+
 
 
 
