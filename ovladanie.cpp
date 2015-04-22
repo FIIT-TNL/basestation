@@ -620,7 +620,7 @@ char* getDataOvladanie(){
 	
 	//sprintf(*dataFromVehicle, "fgdgdfgdfgdfg");
 
-
+  //TODO: Osetrit mutexami
 	return *dataFromVehicle;
 }
 
