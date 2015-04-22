@@ -346,7 +346,7 @@ SDL_Event event;
 			
 
 
-	//				printf("yaw: %f, eyePitch: %f, eyeRoll: %f, y2=%d, p2=%d, r2=%d\n", yaw, eyePitch, eyeRoll, y2, p2, r2);
+					//printf("yaw: %f, eyePitch: %f, eyeRoll: %f, y2=%d, p2=%d, r2=%d\n", yaw, eyePitch, eyeRoll, y2, p2, r2);
 					
 					message[1]=y2;
 					message[2]=p2;

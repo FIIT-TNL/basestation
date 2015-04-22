@@ -14,7 +14,7 @@
     #include <SDL.h>
     #include <winsock.h>
     #include <windows.h>
-    #define X 2             //osi packa zlava doprava
+    #define X 2             //osi packa zlava doprava.
     #define Y 3             //a zhora dole
     #define A 10            //tlacidlo A
 #endif

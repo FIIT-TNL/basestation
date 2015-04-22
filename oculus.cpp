@@ -588,7 +588,7 @@ GLuint cvImage(recFrame texture_cv, int camera){     //Funkcia na konverziu Open
 
 	cv::flip(texture_cv.recentFrame, flipped, 0);				//Otocenie textury
 	texture_cv.recentFrame = flipped;       
-	//		
+		
 
 	if (camera == 2){ 
 		Mat textFlip2;
