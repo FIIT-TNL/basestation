@@ -42,6 +42,39 @@ using namespace OVR;
 using namespace cv;
 
 
+// Turbo hack for opening video in thread (really)
+class StreamOpener : public Task {
+private:
+	VideoCapture *cap;
+	bool is_int = 0;
+	int int_stream = 0;
+	String str_stream = "";
+
+protected:
+	void doTask() {
+		if (is_int) {
+			std::cout << "tukabel str" << cap << int_stream << std::endl;
+			*cap = VideoCapture(int_stream);
+		}
+		else {
+			*cap = VideoCapture(str_stream);
+			std::cout << "tukabel str" << cap << str_stream << std::endl;
+			std::cout << "tukabel str" << cap << std::endl;
+		}
+		if (!cap->isOpened()) {
+			std::cout << "Cannot open the video stream" << cap << std::endl;
+
+		}
+		std::cout << "strea otvoreny" << cap << std::endl;
+	}
+
+public:
+	StreamOpener() {}
+	StreamOpener(VideoCapture *cap, int stream) : cap(cap), is_int(1), int_stream(stream) {}
+	StreamOpener(VideoCapture *cap, String stream) : cap(cap), is_int(0), str_stream(stream) {}
+};
+
+
 //GLuint textureCV;
 //int prvyKrat = 0;
 //
@@ -365,28 +398,61 @@ void Oculus::doTask()
 			
 		//Otvorenie 1. streamu
 		VideoCapture cap;
+		StreamOpener opener1;
+
+		if (this->cfg->isStream1Int()) {
+			opener1 = StreamOpener(&cap, this->cfg->getStream1Int());
+		}
+		else {
+			opener1 = StreamOpener(&cap, this->cfg->getStream1());
+		}
+		opener1.start();
+		/*
 		if (this->cfg->isStream1Int()) {
 			cap = VideoCapture(this->cfg->getStream1Int());
+			std::cout << "tukabel 1 int" << std::endl;
 		} else {
 			cap = VideoCapture(this->cfg->getStream1());
+			std::cout << "tukabel 1 str" << std::endl;
 		}
 		if (!cap.isOpened()) {
 			std::cout << "Cannot open the video stream1" << std::endl;
 
 		}
+		std::cout << "tukabel 1 otvoreny" << std::endl;
+		*/
 
 		//Otvorenie 2. streamu
 		VideoCapture cap2;
+		StreamOpener opener2;
+
+		if (this->cfg->isStream2Int()) {
+			opener2 = StreamOpener(&cap2, this->cfg->getStream2Int());
+		}
+		else {
+			opener2 = StreamOpener(&cap2, this->cfg->getStream2());
+		}
+		opener2.start();
+
+		// yeah madafaka wait
+		opener1.join();
+		opener2.join();
+		std::cout << "TUKABEL: otvorene" << std::endl;
+
+		/*
 		if (this->cfg->isStream2Int()) {
 			cap2 = VideoCapture(this->cfg->getStream2Int());
 		}
 		else {
 			cap2 = VideoCapture(this->cfg->getStream2());
+			std::cout << "tukabel 2 str" << std::endl;
 		}
 		if (!cap2.isOpened()) {
 			std::cout << "Cannot open the video stream2" << std::endl;
 
 		}
+		std::cout << "tukabel 2 otvoreny" << std::endl;
+		*/
 		
 			//http://192.168.1.10:8080/video?dummy=video.mjpg
 			
@@ -405,7 +471,8 @@ void Oculus::doTask()
 			fr2 = new FrameReader(&cap2, &recent2);
 			fr2->start();
 	
-		
+
+			std::cout << "TUKABEL: framer" << std::endl;
 		glGenTextures(2, textures);
 
 
@@ -424,6 +491,7 @@ void Oculus::doTask()
  
         bool running = true;
 
+		std::cout << "TUKABEL: pred cyklom" << std::endl;
 		while (running == true && !this->isTerminateRequested())					//Spustenie cyklu
         {
                 SDL_Event event;
@@ -646,23 +714,24 @@ GLuint Oculus::cvImage(RecentFrame texture_cv, int camera){     //Funkcia na kon
 	texture_cv.recentFrame = flipped;       
 		
 
-	if (camera == 2){ 
+	//if (camera == 2){ 
 		Mat textFlip2;
 		cv::flip(text, textFlip2, 0);
 		texture_cv.recentFrame = texture_cv.recentFrame + textFlip2;
 		
-	}
+	//}
 	
 	//imageOrient.copyTo(texture_cv.recentFrame.rowRange(1, 51).colRange(3, 53));
 	
-	if(camera == 1){
-		opacne = rotate(texture_cv.recentFrame,180);
-		texture_cv.recentFrame=opacne;
 
-		cv::flip(text, flipped, 0);				//Otocenie textury
-		text = flipped;       
-		texture_cv.recentFrame = texture_cv.recentFrame + text;
-	}
+	//if(camera == 1){
+	//	//opacne = rotate(texture_cv.recentFrame,180);
+	//	//texture_cv.recentFrame=opacne;
+
+	//	cv::flip(text, flipped, 0);				//Otocenie textury
+	//	text = flipped;       
+	//	texture_cv.recentFrame = texture_cv.recentFrame + text;
+	//}
 		
 	
 	

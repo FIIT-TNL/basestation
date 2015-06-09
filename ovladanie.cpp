@@ -34,6 +34,14 @@ Ovladanie::Ovladanie(DrivrConfig *cfg)
 
 void Ovladanie::doTask()
 {
+
+	std::cout << "-- Controls start delayed" << std::endl;
+#ifdef _WIN32
+	Sleep(1000);
+#endif // _WIN32
+#ifdef __linux__
+	usleep(1000000);
+#endif
 	std::cout << "-- Controls starting" << std::endl;
 
 SDL_Event event;
@@ -185,7 +193,7 @@ SDL_Event event;
 		message[2]=6;*/
 	 message[0]=3;
 	 sprintf((char*)message+1,"FIIT_TechNoLogic_Motorcontrol_Discover");
-		message_length=strlen("FIIT_TechNoLogic_Motorcontrol_Discover") +1;
+		message_length=strlen("FIIT_TechNoLogic_Motorcontrol_Discover") +2; // aj s terminating nu¼¼
 		struct sockaddr_in from;
 		struct sockaddr_in* from2;
 		
@@ -316,7 +324,7 @@ SDL_Event event;
             xd=(double)SDL_JoystickGetAxis(js, X);
             yd=(double)SDL_JoystickGetAxis(js, Y);
 
-			printf("Packa X=%f ... Packa Y=%f\n", xd, yd);
+			//printf("Packa X=%f ... Packa Y=%f\n", xd, yd);
 
 			x_axis= floor(100 * xd/SHRT_MAX + 0.5);
             y_axis=- floor(100 * yd/SHRT_MAX + 0.5);
@@ -326,6 +334,9 @@ SDL_Event event;
             if(abs(y_axis)<13)
                 y_axis=0;
 
+
+			/*
+			// Old pasovy vehicle
              message[1]=y_axis+x_axis;
              message[2]=y_axis-x_axis;
             if(message[1]>100)
@@ -336,12 +347,19 @@ SDL_Event event;
                     message[2]=100;
             if(message[2]<-100)
                     message[2]=-100;
+			*/
 
-     /*   if (sendto(s, (char*)message, message_length , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
+			// New policajske auto vehicle
+			message[1] = y_axis;
+			message[2] = x_axis;
+
+
+		// Ovladac UFOPORNO7
+        if (sendto(s, (char*)message, message_length , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
              {
                    perror("sendto");
                    exit(EXIT_FAILURE);
-             } */
+             } 
         x_axis=y_axis=xd=yd=0;
         message[0]=message[1]=message[2]=message[3]=0;
 		 message[0]=2;            
@@ -405,14 +423,15 @@ SDL_Event event;
 		
 		message[0]=2;
 		message[1]=(char)floor(dmouseX);
-		message[2]=(char)floor(dmouseY);
-		printf("Mys X=%d Y=%d\n", message[1], message[2]);
+		message[2]=(char)floor(dmouseY);	
+		//printf("Mys X=%d Y=%d\n", message[1], message[2]);
+		/*
 		if (sendto(s, (char*)message, message_length , 0 , (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
              {
                    perror("sendto");
                    exit(EXIT_FAILURE);
              }
-
+			 //*/
 
 
         #ifdef _WIN32

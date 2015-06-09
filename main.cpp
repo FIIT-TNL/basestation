@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
 
 	std::cout << "testing finished" << std::endl;
-	system("PAUSE");
+	//system("PAUSE");
 
 
 	//Oculus oc(cfg, NULL);//&ovl);
@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
 	ovl.start();
 	oculus.start();
 	oculus.join();
+	//while (1) {} // turbokokot
 	ovl.terminate();
 	ovl.join();
 
