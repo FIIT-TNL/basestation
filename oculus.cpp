@@ -473,6 +473,15 @@ void Oculus::doTask()
 	
 
 			std::cout << "TUKABEL: framer" << std::endl;
+#ifdef _WIN32
+			Sleep(300);
+#endif // _WIN32
+#ifdef __linux__
+			usleep(300000);
+#endif
+			std::cout << "TUKABEL: delay" << std::endl;
+
+
 		glGenTextures(2, textures);
 
 
@@ -714,24 +723,27 @@ GLuint Oculus::cvImage(RecentFrame texture_cv, int camera){     //Funkcia na kon
 	texture_cv.recentFrame = flipped;       
 		
 
-	//if (camera == 2){ 
+	if (camera == 2){
+		opacne = rotate(texture_cv.recentFrame, -90);
+		texture_cv.recentFrame = opacne;
+
 		Mat textFlip2;
 		cv::flip(text, textFlip2, 0);
 		texture_cv.recentFrame = texture_cv.recentFrame + textFlip2;
 		
-	//}
+	}
 	
 	//imageOrient.copyTo(texture_cv.recentFrame.rowRange(1, 51).colRange(3, 53));
 	
 
-	//if(camera == 1){
-	//	//opacne = rotate(texture_cv.recentFrame,180);
-	//	//texture_cv.recentFrame=opacne;
+	if(camera == 1){
+		opacne = rotate(texture_cv.recentFrame,90);
+		texture_cv.recentFrame=opacne;
 
-	//	cv::flip(text, flipped, 0);				//Otocenie textury
-	//	text = flipped;       
-	//	texture_cv.recentFrame = texture_cv.recentFrame + text;
-	//}
+		cv::flip(text, flipped, 0);				//Otocenie textury
+		text = flipped;       
+		texture_cv.recentFrame = texture_cv.recentFrame + text;
+	}
 		
 	
 	
