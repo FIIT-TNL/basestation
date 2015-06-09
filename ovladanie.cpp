@@ -376,7 +376,8 @@ SDL_Event event;
 					
 
 
-					y2=(signed char)floor(((yaw+PI)/(2*PI))*100);
+					//y2=(signed char)floor(((yaw+PI)/(2*PI))*100 * 2); //full
+					y2=(signed char)floor(((yaw+PI)/(2*PI))*100);  // half
 					p2=(signed char)floor(((eyePitch+(PI/2))/(PI))*100);
 					r2=(signed char)floor(((eyeRoll+PI)/(2*PI))*100);
 

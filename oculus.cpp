@@ -724,7 +724,7 @@ GLuint Oculus::cvImage(RecentFrame texture_cv, int camera){     //Funkcia na kon
 		
 
 	if (camera == 2){
-		opacne = rotate(texture_cv.recentFrame, -90);
+		opacne = rotate(texture_cv.recentFrame, 90);
 		texture_cv.recentFrame = opacne;
 
 		Mat textFlip2;
@@ -737,7 +737,7 @@ GLuint Oculus::cvImage(RecentFrame texture_cv, int camera){     //Funkcia na kon
 	
 
 	if(camera == 1){
-		opacne = rotate(texture_cv.recentFrame,90);
+		opacne = rotate(texture_cv.recentFrame, -90);
 		texture_cv.recentFrame=opacne;
 
 		cv::flip(text, flipped, 0);				//Otocenie textury
