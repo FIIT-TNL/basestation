@@ -402,7 +402,7 @@ void Oculus::doTask()
 		VideoCapture cap;
 		StreamOpener opener1;
 
-		if (this->cfg->isStreamLeftInt()) {
+		if (!this->cfg->isStreamLeftStr()) {
 			opener1 = StreamOpener(&cap, this->cfg->getStreamLeftInt());
 		}
 		else {
@@ -428,7 +428,7 @@ void Oculus::doTask()
 		VideoCapture cap2;
 		StreamOpener opener2;
 
-		if (this->cfg->isStreamRightInt()) {
+		if (!this->cfg->isStreamRightStr()) {
 			opener2 = StreamOpener(&cap2, this->cfg->getStreamRightInt());
 		}
 		else {

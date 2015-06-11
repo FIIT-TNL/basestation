@@ -31,12 +31,32 @@ int main(int argc, char *argv[])
 	std::string cfgname = cfg->getCfgName();
 	std::cout << "Configuration name: " << cfgname << std::endl;
 
-	std::cout << " stream1 Is int: " << cfg->isStreamLeftInt() << std::endl;
-	std::cout << " stream1: " << cfg->getStreamLeft() << std::endl;
-	std::cout << " stream1 int: " << cfg->getStreamLeftInt() << std::endl;
-	std::cout << " stream2 Is int: " << cfg->isStreamRightInt() << std::endl;
-	std::cout << " stream2: " << cfg->getStreamRight() << std::endl;
-	std::cout << " stream2 int: " << cfg->getStreamRightInt() << std::endl;
+	std::cout << " stream_left = " << cfg->isStreamLeftStr() << std::endl;
+	std::cout << " stream_left_int = " << cfg->getStreamLeftInt() << std::endl;
+	std::cout << " getStreamLeft = " << cfg->getStreamLeft() << std::endl;
+	std::cout << " stream_left_rotation = " << cfg->getStreamLeftRotation() << std::endl;
+	std::cout << " isStreamRightStr = " << cfg->isStreamRightStr() << std::endl;
+	std::cout << " stream_right_int = " << cfg->getStreamRightInt() << std::endl;
+	std::cout << " stream_right = " << cfg->getStreamRight() << std::endl;
+	std::cout << " stream_right_rotation = " << cfg->getStreamRightRotation() << std::endl << std::endl;
+
+	std::cout << " fontsize = " << cfg->getFontSize() << std::endl;
+	std::cout << " text_position_x = " << cfg->getTextPositionX() << std::endl;
+	std::cout << " text_position_y = " << cfg->getTextPositionY() << std::endl;
+	std::cout << " text_color_red = " << cfg->getTextColorRed() << std::endl;
+	std::cout << " text_color_green = " << cfg->getTextColorGreen() << std::endl;
+	std::cout << " text_color_blue = " << cfg->getTextColorBlue() << std::endl << std::endl;
+
+	std::cout << " controls_port = " << cfg->getControlsPort() << std::endl;
+	std::cout << " controls_send_interval = " << cfg->getSendInterval() << std::endl << std::endl;
+
+	std::cout << " joystick_car_control_x_axis = " << cfg->getJoystickCarControlXAxis() << std::endl;
+	std::cout << " joystick_car_control_x_treshold = " << cfg->getJoystickCarControlXTreshold() << std::endl;
+	std::cout << " joystick_car_control_y_axis = " << cfg->getJoystickCarControlYAxis() << std::endl;
+	std::cout << " joystick_car_control_y_treshold = " << cfg->getJoystickCarControlYTreshold() << std::endl;
+	std::cout << " joystick_exit_axis = " << cfg->getJoystickExitAxit() << std::endl << std::endl;
+
+	std::cout << " oculus_position_ratio = " << cfg->getOculusRotationRatio() << std::endl << std::endl;
 	
 	// test task
 	Asdf a;
@@ -44,7 +64,7 @@ int main(int argc, char *argv[])
 	a.terminate();
 
 
-	std::cout << "testing finished" << std::endl;
+	std::cout << std::endl << "testing finished" << std::endl;
 	system("PAUSE");
 
 

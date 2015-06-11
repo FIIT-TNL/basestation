@@ -25,6 +25,32 @@ const std::string DrivrConfig::DEFAULT_CONFIG = "drivr = {\n"
 DrivrConfig::DrivrConfig(string filename)
 {
 	loadConfig(filename);
+	loadDefaults();
+}
+
+void DrivrConfig::loadDefaults()
+{
+	this->filename = filename;
+	try
+	{
+		def_cfg.readString(DrivrConfig::DEFAULT_CONFIG);
+		def_root = &def_cfg.getRoot();
+		def_bs = &(*def_root)["drivr"]["basestation"];
+		
+	}
+	catch (const FileIOException &fioex)
+	{
+		cerr << "I/O error while reading default config" << endl;
+		system("PAUSE");
+		return;
+	}
+	catch (const ParseException &pex)
+	{
+		cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine()
+			<< " - " << pex.getError() << endl;
+		system("PAUSE");
+		return;
+	}
 }
 
 void DrivrConfig::loadConfig(string filename)
@@ -35,7 +61,7 @@ void DrivrConfig::loadConfig(string filename)
 		cfg.readFile(filename.c_str());
 		root = &cfg.getRoot();
 		bs = &(*root)["drivr"]["basestation"];
-		
+
 	}
 	catch (const FileIOException &fioex)
 	{
@@ -52,29 +78,46 @@ void DrivrConfig::loadConfig(string filename)
 	}
 }
 
-string DrivrConfig::getString(Setting *setting, string name)
+string DrivrConfig::getString(Setting *setting, Setting *def_setting, string name)
 {
 	string str;
 	if (!setting->lookupValue(name, str)) {
-		str = "";
+		if (!def_setting->lookupValue(name, str)) {
+			str = "";
+		}
 	}
 	return str;
 }
 
-int DrivrConfig::getInt(Setting *setting, string name)
+int DrivrConfig::getInt(Setting *setting, Setting *def_setting, string name)
 {
 	int i;
 	if (!setting->lookupValue(name, i)) {
-		i = -1;
+		if (!def_setting->lookupValue(name, i)) {
+			i = 0;
+		}
 	}
 	return i;
 }
 
-double DrivrConfig::getDouble(Setting *setting, string name)
+unsigned int DrivrConfig::getUInt(Setting *setting, Setting *def_setting, string name)
+{
+	unsigned int i;
+	if (!setting->lookupValue(name, i)) {
+		if (!def_setting->lookupValue(name, i)) {
+			i = 0;
+		}
+	}
+	return i;
+}
+
+double DrivrConfig::getDouble(Setting *setting, Setting *def_setting, string name)
 {
 	double f;
 	if (!setting->lookupValue(name, f)) {
-		f = 0;
+		if (!def_setting->lookupValue(name, f)) {
+			f = 0.0;
+		}
 	}
 	return f;
 }
@@ -88,52 +131,123 @@ string DrivrConfig::getCfgName()
 	return name;
 }
 
-bool DrivrConfig::isStreamLeftInt()
+bool DrivrConfig::isStreamLeftStr()
 {
-	int i;
-	return bs->lookupValue("stream_left_int", i);
+	string s;
+	return bs->lookupValue("stream_left", s);
 }
 
 int DrivrConfig::getStreamLeftInt()
 {
-	return getInt(bs, "stream_left_int");
+	return getInt(bs, def_bs, "stream_left_int");
 }
 
 string DrivrConfig::getStreamLeft()
 {
-	string s;
-	if (bs->lookupValue("stream_left", s)) {
-		return s;
-	}
-	return "";
+	return getString(bs, def_bs, "stream_left");
 }
 
-bool DrivrConfig::isStreamRightInt()
+bool DrivrConfig::isStreamRightStr()
 {
-	int i;
-	return bs->lookupValue("stream_right_int", i);
+	string s;
+	return bs->lookupValue("stream_right", s);
 }
 
 int DrivrConfig::getStreamRightInt()
 {
-	int i;
-	if (bs->lookupValue("stream_right_int", i)) {
-		return i;
-	}
-	return -1;
+	return getInt(bs, def_bs, "stream_right_int");
 }
 
 string DrivrConfig::getStreamRight()
 {
-	string s;
-	if (bs->lookupValue("stream_right", s)) {
-		return s;
-	}
-	return "";
+	return getString(bs, def_bs, "stream_right");
 }
+
+int DrivrConfig::getStreamLeftRotation()
+{
+	return getInt(bs, def_bs, "stream_right_int");
+}
+
+int DrivrConfig::getStreamRightRotation()
+{
+	return getInt(bs, def_bs, "stream_right_int");
+}
+
+/* -- text -- */
 
 double DrivrConfig::getFontSize()
 {
-	return getDouble(bs, "fontsize");
+	return getDouble(bs, def_bs, "fontsize");
+}
+
+int DrivrConfig::getTextPositionX()
+{
+	return getInt(bs, def_bs, "text_position_x");
+}
+
+int DrivrConfig::getTextPositionY()
+{
+	return getInt(bs, def_bs, "text_position_y");
+}
+
+int DrivrConfig::getTextColorRed()
+{
+	return getInt(bs, def_bs, "text_color_red");
+}
+
+int DrivrConfig::getTextColorGreen()
+{
+	return getInt(bs, def_bs, "text_color_green");
+}
+
+int DrivrConfig::getTextColorBlue()
+{
+	return getInt(bs, def_bs, "text_color_blue");
+}
+
+/* -- controls -- */
+
+unsigned int DrivrConfig::getControlsPort()
+{
+	return getUInt(bs, def_bs, "controls_port");
+}
+
+unsigned int DrivrConfig::getSendInterval()
+{
+	return getUInt(bs, def_bs, "controls_send_interval");
+}
+
+/* -- joystick -- */
+
+int DrivrConfig::getJoystickCarControlXAxis()
+{
+	return getInt(bs, def_bs, "joystick_car_control_x_axis");
+}
+
+int DrivrConfig::getJoystickCarControlXTreshold()
+{
+	return getInt(bs, def_bs, "joystick_car_control_x_treshold");
+}
+
+int DrivrConfig::getJoystickCarControlYAxis()
+{
+	return getInt(bs, def_bs, "joystick_car_control_y_axis");
+}
+
+int DrivrConfig::getJoystickCarControlYTreshold()
+{
+	return getInt(bs, def_bs, "joystick_car_control_y_treshold");
+}
+
+int DrivrConfig::getJoystickExitAxit()
+{
+	return getInt(bs, def_bs, "joystick_exit_axis");
+}
+
+/* -- Oculus -- */
+
+double DrivrConfig::getOculusRotationRatio()
+{
+	return getDouble(bs, def_bs, "oculus_position_ratio");
 }
 
