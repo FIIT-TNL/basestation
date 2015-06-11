@@ -17,7 +17,7 @@ private:
 public:
 	~Task();
 	virtual void doTask() = 0;
-	bool isTerminateRequested();
+	bool isTerminationRequested();
 	bool isRunning();
 	bool start();
 	void terminate();

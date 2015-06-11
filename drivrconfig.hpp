@@ -10,30 +10,32 @@ using namespace libconfig;
 
 class DrivrConfig {
 private:
+	static const std::string DEFAULT_CONFIG;
+
 	Config cfg;
 	std::string filename;
 	Setting *root = NULL;
 	Setting *bs = NULL;		//basestation config
-
-	void loadConfig(std::string filename);
+	
+	std::string getString(Setting *setting, std::string name);
+	int getInt(Setting *setting, std::string name);
+	double getDouble(Setting *setting, std::string name);
 
 public:
 	DrivrConfig() : DrivrConfig("drivr.cfg") {}
 	DrivrConfig(std::string filename);
 
+	void loadConfig(std::string filename);
+		
 	std::string getCfgName();
-
-	bool isStream1Int();
-	int getStream1Int();
-	std::string getStream1();
-
-	bool isStream2Int();
-	int getStream2Int();
-	std::string getStream2();
-
-
-
-
+	bool isStreamLeftInt();
+	int getStreamLeftInt();
+	std::string getStreamLeft();
+	bool isStreamRightInt();
+	int getStreamRightInt();
+	std::string getStreamRight();
+	double getFontSize();
+	//int 
 };
 
 #endif // DRIVRCONFIG_HPP

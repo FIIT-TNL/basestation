@@ -18,7 +18,7 @@
 //#define OTHER_SIDE "192.168.1.108"
 //#define OTHER_SIDE "192.168.43.15"
 #define OTHER_SIDE "192.168.56.101"
-#define MIN 13
+#define MIN_STICK_VAL 13
 #define ADDRESS_BROADCAST "255.255.255.255"
 
 using namespace OVR;
@@ -193,7 +193,7 @@ SDL_Event event;
 		message[2]=6;*/
 	 message[0]=3;
 	 sprintf((char*)message+1,"FIIT_TechNoLogic_Motorcontrol_Discover");
-		message_length=strlen("FIIT_TechNoLogic_Motorcontrol_Discover") +2; // aj s terminating nu¼¼
+		message_length=strlen("FIIT_TechNoLogic_Motorcontrol_Discover") +2; // with terminating nu¼¼
 		struct sockaddr_in from;
 		struct sockaddr_in* from2;
 		
@@ -301,7 +301,7 @@ SDL_Event event;
 
 
 
-	while (!this->isTerminateRequested()){
+	while (!this->isTerminationRequested()){
 		count++;
 				//ping(count, s, si_other, slen_other);            			
 
@@ -329,9 +329,9 @@ SDL_Event event;
 			x_axis= floor(100 * xd/SHRT_MAX + 0.5);
             y_axis=- floor(100 * yd/SHRT_MAX + 0.5);
 
-            if(abs(x_axis)<13)
+            if(abs(x_axis)<MIN_STICK_VAL)
                 x_axis=0;
-            if(abs(y_axis)<13)
+            if(abs(y_axis)<MIN_STICK_VAL)
                 y_axis=0;
 
 

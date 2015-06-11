@@ -17,7 +17,7 @@ void Task::_doTaskInternal()
 	_running = false;
 }
 
-bool Task::isTerminateRequested()
+bool Task::isTerminationRequested()
 {
 	return _terminate_req;
 }

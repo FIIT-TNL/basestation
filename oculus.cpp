@@ -53,19 +53,18 @@ private:
 protected:
 	void doTask() {
 		if (is_int) {
-			std::cout << "tukabel str" << cap << int_stream << std::endl;
+			//std::cout << "tukabel str" << cap << int_stream << std::endl;
 			*cap = VideoCapture(int_stream);
 		}
 		else {
 			*cap = VideoCapture(str_stream);
-			std::cout << "tukabel str" << cap << str_stream << std::endl;
-			std::cout << "tukabel str" << cap << std::endl;
+			//std::cout << "tukabel str" << cap << str_stream << std::endl;
 		}
 		if (!cap->isOpened()) {
-			std::cout << "Cannot open the video stream" << cap << std::endl;
+			//std::cout << "Cannot open the video stream" << cap << std::endl;
 
 		}
-		std::cout << "strea otvoreny" << cap << std::endl;
+		std::cout << "stream otvoreny" << cap << std::endl;
 	}
 
 public:
@@ -171,6 +170,7 @@ void Oculus::doTask()
         if (hmd == NULL)
         {
 			hmd = ovrHmd_CreateDebug(ovrHmd_DK1);
+			printf("Using DEBUG kokulus\n");
  
 			debug = true;
         }
@@ -184,8 +184,10 @@ void Oculus::doTask()
  
         int w = hmd->Resolution.w;
         int h = hmd->Resolution.h;
- 
-        SDL_Window *window = SDL_CreateWindow("DriVR 0.7", x, y, w, h, flags);
+      	printf("Resolution: %dx%d\n Window position: (%d,%d)\n", w, h, x, y);
+        SDL_Window *window = SDL_CreateWindow("DriVR bejzstešn", x, y, w, h, flags);
+        //SDL_Window *window = SDL_CreateWindow("DriVR ostrokulus", SDL_WINDOWPOS_CENTERED_DISPLAY(1), SDL_WINDOWPOS_CENTERED_DISPLAY(1), w, h, flags);
+        //SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
  
         SDL_GLContext context = SDL_GL_CreateContext(window);
  
@@ -400,23 +402,23 @@ void Oculus::doTask()
 		VideoCapture cap;
 		StreamOpener opener1;
 
-		if (this->cfg->isStream1Int()) {
-			opener1 = StreamOpener(&cap, this->cfg->getStream1Int());
+		if (this->cfg->isStreamLeftInt()) {
+			opener1 = StreamOpener(&cap, this->cfg->getStreamLeftInt());
 		}
 		else {
-			opener1 = StreamOpener(&cap, this->cfg->getStream1());
+			opener1 = StreamOpener(&cap, this->cfg->getStreamLeft());
 		}
 		opener1.start();
 		/*
-		if (this->cfg->isStream1Int()) {
-			cap = VideoCapture(this->cfg->getStream1Int());
+		if (this->cfg->isStreamLeftInt()) {
+			cap = VideoCapture(this->cfg->getStreamLeftInt());
 			std::cout << "tukabel 1 int" << std::endl;
 		} else {
-			cap = VideoCapture(this->cfg->getStream1());
+			cap = VideoCapture(this->cfg->getStreamLeft());
 			std::cout << "tukabel 1 str" << std::endl;
 		}
 		if (!cap.isOpened()) {
-			std::cout << "Cannot open the video stream1" << std::endl;
+			std::cout << "Cannot open the video StreamLeft" << std::endl;
 
 		}
 		std::cout << "tukabel 1 otvoreny" << std::endl;
@@ -426,11 +428,11 @@ void Oculus::doTask()
 		VideoCapture cap2;
 		StreamOpener opener2;
 
-		if (this->cfg->isStream2Int()) {
-			opener2 = StreamOpener(&cap2, this->cfg->getStream2Int());
+		if (this->cfg->isStreamRightInt()) {
+			opener2 = StreamOpener(&cap2, this->cfg->getStreamRightInt());
 		}
 		else {
-			opener2 = StreamOpener(&cap2, this->cfg->getStream2());
+			opener2 = StreamOpener(&cap2, this->cfg->getStreamRight());
 		}
 		opener2.start();
 
@@ -440,15 +442,15 @@ void Oculus::doTask()
 		std::cout << "TUKABEL: otvorene" << std::endl;
 
 		/*
-		if (this->cfg->isStream2Int()) {
-			cap2 = VideoCapture(this->cfg->getStream2Int());
+		if (this->cfg->isStreamRigthInt()) {
+			cap2 = VideoCapture(this->cfg->getStreamRigthInt());
 		}
 		else {
-			cap2 = VideoCapture(this->cfg->getStream2());
+			cap2 = VideoCapture(this->cfg->getStreamRigth());
 			std::cout << "tukabel 2 str" << std::endl;
 		}
 		if (!cap2.isOpened()) {
-			std::cout << "Cannot open the video stream2" << std::endl;
+			std::cout << "Cannot open the video StreamRigth" << std::endl;
 
 		}
 		std::cout << "tukabel 2 otvoreny" << std::endl;
@@ -500,8 +502,8 @@ void Oculus::doTask()
  
         bool running = true;
 
-		std::cout << "TUKABEL: pred cyklom" << std::endl;
-		while (running == true && !this->isTerminateRequested())					//Spustenie cyklu
+		//std::cout << "TUKABEL: pred cyklom" << std::endl;
+		while (running == true && !this->isTerminationRequested())					//Spustenie cyklu
         {
                 SDL_Event event;
  
@@ -638,6 +640,18 @@ void Oculus::doTask()
 		//t2.join();
 		//t3.join();
 
+    if (fr1) {
+			fr1->terminate();
+			fr1->join();
+			delete fr1;
+		}
+		if (fr2) {
+			fr2->terminate();
+			fr2->join();
+			delete fr2;
+		}
+		cap.release();
+		cap2.release();
         //return 0;
 		return;
 }

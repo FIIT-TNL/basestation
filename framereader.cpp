@@ -10,7 +10,7 @@ FrameReader::FrameReader(VideoCapture *cap, RecentFrame *recentFrame)
 void FrameReader::doTask()
 {
 	bool bSuccess;
-	while (!this->isTerminateRequested()){
+	while (!this->isTerminationRequested()){
 		try
 		{
 			bSuccess = cap->read(recentFrame->recentFrame);

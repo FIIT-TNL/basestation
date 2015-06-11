@@ -11,7 +11,7 @@ class Asdf : public Task {
 public:
 	std::string s = "a";
 	void doTask() {
-		while (!isTerminateRequested()) {
+		while (!isTerminationRequested()) {
 			std::cout << s << std::endl;
 		}
 	}
@@ -31,12 +31,12 @@ int main(int argc, char *argv[])
 	std::string cfgname = cfg->getCfgName();
 	std::cout << "Configuration name: " << cfgname << std::endl;
 
-	std::cout << " stream1 Is int: " << cfg->isStream1Int() << std::endl;
-	std::cout << " stream1: " << cfg->getStream1() << std::endl;
-	std::cout << " stream1 int: " << cfg->getStream1Int() << std::endl;
-	std::cout << " stream2 Is int: " << cfg->isStream2Int() << std::endl;
-	std::cout << " stream2: " << cfg->getStream2() << std::endl;
-	std::cout << " stream2 int: " << cfg->getStream2Int() << std::endl;
+	std::cout << " stream1 Is int: " << cfg->isStreamLeftInt() << std::endl;
+	std::cout << " stream1: " << cfg->getStreamLeft() << std::endl;
+	std::cout << " stream1 int: " << cfg->getStreamLeftInt() << std::endl;
+	std::cout << " stream2 Is int: " << cfg->isStreamRightInt() << std::endl;
+	std::cout << " stream2: " << cfg->getStreamRight() << std::endl;
+	std::cout << " stream2 int: " << cfg->getStreamRightInt() << std::endl;
 	
 	// test task
 	Asdf a;
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
 
 	std::cout << "testing finished" << std::endl;
-	//system("PAUSE");
+	system("PAUSE");
 
 
 	//Oculus oc(cfg, NULL);//&ovl);
@@ -62,7 +62,6 @@ int main(int argc, char *argv[])
 	ovl.start();
 	oculus.start();
 	oculus.join();
-	//while (1) {} // turbokokot
 	ovl.terminate();
 	ovl.join();
 
