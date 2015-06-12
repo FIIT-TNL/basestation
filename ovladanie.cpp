@@ -38,8 +38,8 @@ void Ovladanie::doTask()
 	this->controls_port = this->cfg->getControlsPort();
 	this->controls_send_interval = this->cfg->getControlsSendInterval();
 	this->joystick_car_control_x_axis = this->cfg->getJoystickCarControlXAxis();
-	this->joystick_car_control_y_axis = this->cfg->getJoystickCarControlXTreshold();
-	this->joystick_car_control_x_treshold = this->cfg->getJoystickCarControlYAxis();
+	this->joystick_car_control_y_axis = this->cfg->getJoystickCarControlYAxis();
+	this->joystick_car_control_x_treshold = this->cfg->getJoystickCarControlXTreshold();
 	this->joystick_car_control_y_treshold = this->cfg->getJoystickCarControlYTreshold();
 	this->joystick_exit_axis = this->cfg->getJoystickExitAxit();
 	this->oculus_position_ratio = this->cfg->getOculusRotationRatio();
