@@ -42,6 +42,9 @@ using namespace OVR;
 using namespace cv;
 
 
+#define DRIVR_CAMERA_LEFT	1
+#define DRIVR_CAMERA_RIGHT	2
+
 // Turbo hack for opening video in thread (really)
 class StreamOpener : public Task {
 private:
@@ -184,8 +187,12 @@ void Oculus::doTask()
  
         int w = hmd->Resolution.w;
         int h = hmd->Resolution.h;
+		
       	printf("Resolution: %dx%d\n Window position: (%d,%d)\n", w, h, x, y);
-        SDL_Window *window = SDL_CreateWindow("DriVR bejzstešn", x, y, w, h, flags);
+
+		std::string title("DriVR bejzstešn - ");
+		title += this->cfg->getCfgName();
+        SDL_Window *window = SDL_CreateWindow(title.c_str(), x, y, w, h, flags);
         //SDL_Window *window = SDL_CreateWindow("DriVR ostrokulus", SDL_WINDOWPOS_CENTERED_DISPLAY(1), SDL_WINDOWPOS_CENTERED_DISPLAY(1), w, h, flags);
         //SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
  
@@ -268,16 +275,16 @@ void Oculus::doTask()
  
         SDL_GetWindowWMInfo(window, &info);
  
-        ovrGLConfig cfg;
-        cfg.OGL.Header.API = ovrRenderAPI_OpenGL;
-        cfg.OGL.Header.RTSize = Sizei(hmd->Resolution.w, hmd->Resolution.h);
-        cfg.OGL.Header.Multisample = 1;
+        ovrGLConfig ovrCfg;
+        ovrCfg.OGL.Header.API = ovrRenderAPI_OpenGL;
+        ovrCfg.OGL.Header.RTSize = Sizei(hmd->Resolution.w, hmd->Resolution.h);
+        ovrCfg.OGL.Header.Multisample = 1;
 #if defined(OVR_OS_WIN32)
         if (!(hmd->HmdCaps & ovrHmdCap_ExtendDesktop))
                 ovrHmd_AttachToWindow(hmd, info.info.win.window, NULL, NULL);
  
-        cfg.OGL.Window = info.info.win.window;
-        cfg.OGL.DC = NULL;
+        ovrCfg.OGL.Window = info.info.win.window;
+        ovrCfg.OGL.DC = NULL;
 #elif defined(OVR_OS_LINUX)
         cfg.OGL.Disp = info.info.x11.display;
         cfg.OGL.Win = info.info.x11.window;
@@ -285,7 +292,7 @@ void Oculus::doTask()
  
         ovrEyeRenderDesc eyeRenderDesc[2];
  
-        ovrHmd_ConfigureRendering(hmd, &cfg.Config, ovrDistortionCap_Chromatic | ovrDistortionCap_Vignette | ovrDistortionCap_TimeWarp | ovrDistortionCap_Overdrive, eyeFov, eyeRenderDesc);
+        ovrHmd_ConfigureRendering(hmd, &ovrCfg.Config, ovrDistortionCap_Chromatic | ovrDistortionCap_Vignette | ovrDistortionCap_TimeWarp | ovrDistortionCap_Overdrive, eyeFov, eyeRenderDesc);
  
         ovrHmd_SetEnabledCaps(hmd, ovrHmdCap_LowPersistence | ovrHmdCap_DynamicPrediction);
  
@@ -500,6 +507,17 @@ void Oculus::doTask()
         glDepthFunc(GL_LEQUAL);
         glEnable(GL_DEPTH_TEST);
  
+
+		/* Load configuration */
+		this->stream_left_rotation = this->cfg->getStreamLeftRotation();
+		this->stream_right_rotation = this->cfg->getStreamRightRotation();
+		this->fontsize = this->cfg->getFontSize();
+		this->text_position_x = this->cfg->getTextPositionX();
+		this->text_position_y = this->cfg->getTextPositionY();
+		this->text_color_red = this->cfg->getTextColorRed();
+		this->text_color_green = this->cfg->getTextColorGreen();
+		this->text_color_blue = this->cfg->getTextColorBlue();
+		
         bool running = true;
 
 		//std::cout << "TUKABEL: pred cyklom" << std::endl;
@@ -725,9 +743,9 @@ GLuint Oculus::cvImage(RecentFrame texture_cv, int camera){     //Funkcia na kon
 		sprintf(rychlosta, "NO Control");
 	}
 	
-	cv::putText(text, teplotaa, cvPoint(sirka/3,200), FONT_HERSHEY_COMPLEX_SMALL, 0.7, cvScalar(200,200,250), 0.6, CV_AA);	//Vlozenie textu do OpenCV Mat
-	cv::putText(text, "sdsdsds", cvPoint(sirka/3,220), FONT_HERSHEY_COMPLEX_SMALL, 0.7, cvScalar(200,200,250), 0.6, CV_AA);		//Vlozenie textu do OpenCV Mat
-	cv::putText(text, rychlosta, cvPoint(sirka/3,240), FONT_HERSHEY_COMPLEX_SMALL, 0.7, cvScalar(100,100,100), 0.6, CV_AA);	//Vlozenie textu do OpenCV Mat
+	cv::putText(text, teplotaa, cvPoint(text_position_x, text_position_y), FONT_HERSHEY_COMPLEX_SMALL, fontsize, cvScalar(text_color_blue, text_color_green, text_color_red), 0.6, CV_AA);	//Vlozenie textu do OpenCV Mat
+	cv::putText(text, "sdsdsds", cvPoint(text_position_x, text_position_y + 20), FONT_HERSHEY_COMPLEX_SMALL, fontsize, cvScalar(text_color_blue, text_color_green, text_color_red), 0.6, CV_AA);		//Vlozenie textu do OpenCV Mat
+	cv::putText(text, rychlosta, cvPoint(text_position_x, text_position_y + 20), FONT_HERSHEY_COMPLEX_SMALL, fontsize, cvScalar(text_color_blue, text_color_green, text_color_red), 0.6, CV_AA);	//Vlozenie textu do OpenCV Mat
 
 	
 	//if (camera ==2) texture_cv.recentFrame = texture_cv.recentFrame + text;
@@ -737,8 +755,8 @@ GLuint Oculus::cvImage(RecentFrame texture_cv, int camera){     //Funkcia na kon
 	texture_cv.recentFrame = flipped;       
 		
 
-	if (camera == 2){
-		opacne = rotate(texture_cv.recentFrame, 90);
+	if (camera == DRIVR_CAMERA_RIGHT){
+		opacne = rotate(texture_cv.recentFrame, stream_right_rotation);
 		texture_cv.recentFrame = opacne;
 
 		Mat textFlip2;
@@ -750,8 +768,8 @@ GLuint Oculus::cvImage(RecentFrame texture_cv, int camera){     //Funkcia na kon
 	//imageOrient.copyTo(texture_cv.recentFrame.rowRange(1, 51).colRange(3, 53));
 	
 
-	if(camera == 1){
-		opacne = rotate(texture_cv.recentFrame, -90);
+	if (camera == DRIVR_CAMERA_LEFT){
+		opacne = rotate(texture_cv.recentFrame, stream_left_rotation);
 		texture_cv.recentFrame=opacne;
 
 		cv::flip(text, flipped, 0);				//Otocenie textury

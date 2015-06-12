@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 	std::cout << " text_color_blue = " << cfg->getTextColorBlue() << std::endl << std::endl;
 
 	std::cout << " controls_port = " << cfg->getControlsPort() << std::endl;
-	std::cout << " controls_send_interval = " << cfg->getSendInterval() << std::endl << std::endl;
+	std::cout << " controls_send_interval = " << cfg->getControlsSendInterval() << std::endl << std::endl;
 
 	std::cout << " joystick_car_control_x_axis = " << cfg->getJoystickCarControlXAxis() << std::endl;
 	std::cout << " joystick_car_control_x_treshold = " << cfg->getJoystickCarControlXTreshold() << std::endl;

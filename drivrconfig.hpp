@@ -52,7 +52,7 @@ public:
 	int getTextColorBlue();
 	
 	unsigned int getControlsPort();
-	unsigned int getSendInterval();
+	unsigned int getControlsSendInterval();
 
 	int getJoystickCarControlXAxis();
 	int getJoystickCarControlXTreshold();

@@ -218,7 +218,7 @@ unsigned int DrivrConfig::getControlsPort()
 	return getUInt(bs, def_bs, "controls_port");
 }
 
-unsigned int DrivrConfig::getSendInterval()
+unsigned int DrivrConfig::getControlsSendInterval()
 {
 	return getUInt(bs, def_bs, "controls_send_interval");
 }

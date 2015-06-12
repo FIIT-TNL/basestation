@@ -42,6 +42,16 @@ class Ovladanie : public Task {
 private:
 	DrivrConfig *cfg;
 	char** dataFromVehicle = NULL;
+	
+	// config
+	unsigned int controls_port = 0;
+	unsigned int controls_send_interval = 0;
+	int joystick_car_control_x_axis = 0;
+	int joystick_car_control_x_treshold = 0;
+	int joystick_car_control_y_axis = 0;
+	int joystick_car_control_y_treshold = 0;
+	int joystick_exit_axis = 0;
+	double oculus_position_ratio = 1.0;
 
 	double ping(int ping_id, SOCKET s, struct sockaddr_in si_other, int slen_other);
 	void ping2();

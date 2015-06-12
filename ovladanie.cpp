@@ -1,23 +1,23 @@
 #include "ovladanie.hpp"
 
 
-#ifdef _WIN32
-#define X 2             //osi packa zlava doprava
-#define Y 3             //a zhora dole
-#define A 10            //tlacidlo A
-#endif
-#ifdef __linux__
-#define X 3                 //Osi. Toto plati pre MINT
-#define Y 4
-#define A 0
-#endif
+//#ifdef _WIN32
+//#define X 2             //osi packa zlava doprava
+//#define Y 3             //a zhora dole
+//#define A 10            //tlacidlo A
+//#endif
+//#ifdef __linux__
+//#define X 3                 //Osi. Toto plati pre MINT
+//#define Y 4
+//#define A 0
+//#endif
 
-#define PORT 5566
+//#define PORT 5566
 #define PI 3.14159265359
 #define ATTEMPTS 5
 //#define OTHER_SIDE "192.168.1.108"
 //#define OTHER_SIDE "192.168.43.15"
-#define OTHER_SIDE "192.168.56.101"
+//#define OTHER_SIDE "192.168.56.101"
 #define MIN_STICK_VAL 13
 #define ADDRESS_BROADCAST "255.255.255.255"
 
@@ -34,6 +34,16 @@ Ovladanie::Ovladanie(DrivrConfig *cfg)
 
 void Ovladanie::doTask()
 {
+	/* Load config */
+	this->controls_port = this->cfg->getControlsPort();
+	this->controls_send_interval = this->cfg->getControlsSendInterval();
+	this->joystick_car_control_x_axis = this->cfg->getJoystickCarControlXAxis();
+	this->joystick_car_control_y_axis = this->cfg->getJoystickCarControlXTreshold();
+	this->joystick_car_control_x_treshold = this->cfg->getJoystickCarControlYAxis();
+	this->joystick_car_control_y_treshold = this->cfg->getJoystickCarControlYTreshold();
+	this->joystick_exit_axis = this->cfg->getJoystickExitAxit();
+	this->oculus_position_ratio = this->cfg->getOculusRotationRatio();
+
 
 	std::cout << "-- Controls start delayed" << std::endl;
 #ifdef _WIN32
@@ -80,8 +90,6 @@ SDL_Event event;
   int i;
   SDL_Joystick* js = NULL;
 
-
-
   bool debug = false;
  
         ovr_Initialize();
@@ -94,20 +102,6 @@ SDL_Event event;
  
                 debug = true;
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -181,7 +175,7 @@ SDL_Event event;
 
     memset((char *) &si_other, 0, sizeof(si_other));
 	si_other.sin_family = AF_INET;
-	si_other.sin_port = htons(PORT);
+	si_other.sin_port = htons(controls_port);
 	//si_other.sin_addr.s_addr = inet_addr(OTHER_SIDE);
 	si_other.sin_addr.s_addr = inet_addr(ADDRESS_BROADCAST);
 
@@ -241,10 +235,15 @@ SDL_Event event;
 //	 getchar();
 //	 getchar();
 	 //exit(1);
-	if(i==0)
-		si_other.sin_addr = from2->sin_addr;
-	else
-		si_other.sin_addr.s_addr=inet_addr(OTHER_SIDE);
+	 if (i == 0) {
+		 si_other.sin_addr = from2->sin_addr;
+	 }
+	 else {
+		 //si_other.sin_addr.s_addr = inet_addr(OTHER_SIDE);
+		 printf("Ta nenasiel som druhu stranu\n");
+		 system("PAUSE");
+		 exit(-1);
+	 }
 	i=0;
 	message_length=0;
 	for(i=0;i<=strlen("FIIT_TechNoLogic_Motorcontrol_Discover");i++)
@@ -312,7 +311,7 @@ SDL_Event event;
 			
             message_length = 3;
             message[0] = 1;
-            jskey = SDL_JoystickGetButton(js, A);
+			jskey = SDL_JoystickGetButton(js, joystick_exit_axis);
             if(jskey==1)
                 done=1;
             if(jskey==2)
@@ -321,17 +320,17 @@ SDL_Event event;
 
             }
 
-            xd=(double)SDL_JoystickGetAxis(js, X);
-            yd=(double)SDL_JoystickGetAxis(js, Y);
+			xd = (double)SDL_JoystickGetAxis(js, joystick_car_control_x_axis);
+			yd = (double)SDL_JoystickGetAxis(js, joystick_car_control_y_axis);
 
 			//printf("Packa X=%f ... Packa Y=%f\n", xd, yd);
 
 			x_axis= floor(100 * xd/SHRT_MAX + 0.5);
             y_axis=- floor(100 * yd/SHRT_MAX + 0.5);
 
-            if(abs(x_axis)<MIN_STICK_VAL)
+			if (abs(x_axis) < joystick_car_control_x_treshold)
                 x_axis=0;
-            if(abs(y_axis)<MIN_STICK_VAL)
+			if (abs(y_axis) < joystick_car_control_y_treshold)
                 y_axis=0;
 
 
@@ -377,9 +376,11 @@ SDL_Event event;
 
 
 					//y2=(signed char)floor(((yaw+PI)/(2*PI))*100 * 2); //full
-					y2=(signed char)floor(((yaw+PI)/(2*PI))*100);  // half
-					p2=(signed char)floor(((eyePitch+(PI/2))/(PI))*100);
-					r2=(signed char)floor(((eyeRoll+PI)/(2*PI))*100);
+					//y2=(signed char)floor(((yaw+PI)/(2*PI))*100);  // half
+
+					y2 = (signed char)floor(((yaw + PI) / (2 * PI)) * 100 * oculus_position_ratio);
+					p2 = (signed char)floor(((eyePitch + (PI / 2)) / (PI)) * 100 * oculus_position_ratio);
+					r2 = (signed char)floor(((eyeRoll + PI) / (2 * PI)) * 100 * oculus_position_ratio);
 
 			/*	y2 = (signed char)abs(floor(((y2+PI)/(PI*2)) * 100 + 0.5));
 			p2 = (signed char)abs(floor(((p2+PI/2)/PI) * 100 + 0.5));
@@ -436,10 +437,10 @@ SDL_Event event;
 
 
         #ifdef _WIN32
-                    Sleep(10);
+		Sleep(controls_send_interval);
         #endif // _WIN32
         #ifdef __linux__
-                    usleep(10000);
+		usleep(1000 * controls_send_interval);
         #endif
 	}
 
@@ -553,11 +554,11 @@ if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
 
 void Ovladanie::ping2()
 {
-	char command[21];
-	strcpy(command, "ping ");
-	strcpy(command + 5, OTHER_SIDE);
-	printf("command: %s\n", command);
-	system(command);
+	//char command[21];
+	//strcpy(command, "ping ");
+	//strcpy(command + 5, OTHER_SIDE);
+	//printf("command: %s\n", command);
+	//system(command);
 }
 
 
@@ -582,7 +583,7 @@ int Ovladanie::getDataFromVehicle(SOCKET s, char** dataFromVehicle)
 	struct timeval tv ;
 
     int i=0;
-    u_long ul_ping_id;
+    //u_long ul_ping_id;
     int message_length = sizeof(u_long) + 1;
     int BUFLEN = 1500;
 	int recv_len=0;	
@@ -692,7 +693,7 @@ int Ovladanie::getDataFromVehicle(SOCKET s, char** dataFromVehicle, int timeout_
 	int fromlen = sizeof(sockaddr_in);
 
     int i=0;
-    u_long ul_ping_id;
+    //u_long ul_ping_id;
     int message_length = sizeof(u_long) + 1;
     int BUFLEN = 1500;
 	int recv_len=0;	

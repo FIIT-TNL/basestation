@@ -66,6 +66,16 @@ private:
 	int load_textures();
 	int ifBlack(Mat framBlack);
 
+	// config
+	int stream_left_rotation = 0;
+	int stream_right_rotation = 0;
+	double fontsize = 0;
+	int text_position_x = 0;
+	int text_position_y = 0;
+	int text_color_red = 0;
+	int text_color_green = 0;
+	int text_color_blue = 0;
+
 protected:
 	void doTask();
 
