@@ -10,8 +10,10 @@ const std::string DrivrConfig::DEFAULT_CONFIG = "drivr = {\n"
 	"  basestation = {\n"
 	"    stream_left_int = 0\n"
 	"    stream_left = \"udp://@0.0.0.0:5567\"\n"
+	"    stream_left_rotation = -90\n"
 	"    stream_right_int = 0\n"
 	"    stream_right = \"udp ://@0.0.0.0:5568\"\n"
+	"    stream_right_rotation = 90\n"
 	"    fontsize = 0.7\n"
 	"    text_position_x = 200\n"
 	"    text_position_y = 200\n"
@@ -171,12 +173,12 @@ string DrivrConfig::getStreamRight()
 
 int DrivrConfig::getStreamLeftRotation()
 {
-	return getInt(bs, def_bs, "stream_right_int");
+	return getInt(bs, def_bs, "stream_left_rotation");
 }
 
 int DrivrConfig::getStreamRightRotation()
 {
-	return getInt(bs, def_bs, "stream_right_int");
+	return getInt(bs, def_bs, "stream_right_rotation");
 }
 
 /* -- text -- */
