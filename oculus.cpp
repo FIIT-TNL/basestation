@@ -172,7 +172,7 @@ void Oculus::doTask()
  
         if (hmd == NULL)
         {
-			hmd = ovrHmd_CreateDebug(ovrHmd_DK1);
+			hmd = ovrHmd_CreateDebug(ovrHmd_DK2);
 			printf("Using DEBUG kokulus\n");
  
 			debug = true;
@@ -409,11 +409,11 @@ void Oculus::doTask()
 		VideoCapture cap;
 		StreamOpener opener1;
 
-		if (!this->cfg->isStreamLeftStr()) {
-			opener1 = StreamOpener(&cap, this->cfg->getStreamLeftInt());
+		if (!this->cfg->isStreamRightStr()) {
+			opener1 = StreamOpener(&cap, this->cfg->getStreamRightInt());
 		}
 		else {
-			opener1 = StreamOpener(&cap, this->cfg->getStreamLeft());
+			opener1 = StreamOpener(&cap, this->cfg->getStreamRight());
 		}
 		opener1.start();
 		/*
@@ -435,11 +435,11 @@ void Oculus::doTask()
 		VideoCapture cap2;
 		StreamOpener opener2;
 
-		if (!this->cfg->isStreamRightStr()) {
-			opener2 = StreamOpener(&cap2, this->cfg->getStreamRightInt());
+		if (!this->cfg->isStreamLeftStr()) {
+			opener2 = StreamOpener(&cap2, this->cfg->getStreamLeftInt());
 		}
 		else {
-			opener2 = StreamOpener(&cap2, this->cfg->getStreamRight());
+			opener2 = StreamOpener(&cap2, this->cfg->getStreamLeft());
 		}
 		opener2.start();
 
@@ -737,15 +737,16 @@ GLuint Oculus::cvImage(RecentFrame texture_cv, int camera){     //Funkcia na kon
 	//imageOrient.copyTo(text(cv::Rect(400,200,imageOrient.cols, imageOrient.rows)));
 
 	if (control) {
-		sprintf(rychlosta, "Data %s", control->getDataOvladanie());
+		sprintf(teplotaa, "Temp: %s *C", control->getSensorDataTemperature());
 	}
 	else {
-		sprintf(rychlosta, "NO Control");
+		sprintf(teplotaa, "Temp: Unknown");
 	}
-	
-	cv::putText(text, teplotaa, cvPoint(text_position_x, text_position_y), FONT_HERSHEY_COMPLEX_SMALL, fontsize, cvScalar(text_color_blue, text_color_green, text_color_red), 0.6, CV_AA);	//Vlozenie textu do OpenCV Mat
-	cv::putText(text, "sdsdsds", cvPoint(text_position_x, text_position_y + 20), FONT_HERSHEY_COMPLEX_SMALL, fontsize, cvScalar(text_color_blue, text_color_green, text_color_red), 0.6, CV_AA);		//Vlozenie textu do OpenCV Mat
-	cv::putText(text, rychlosta, cvPoint(text_position_x, text_position_y + 20), FONT_HERSHEY_COMPLEX_SMALL, fontsize, cvScalar(text_color_blue, text_color_green, text_color_red), 0.6, CV_AA);	//Vlozenie textu do OpenCV Mat
+
+	cv::putText(text, teplotaa, cvPoint(text_position_x, text_position_y), FONT_HERSHEY_DUPLEX, fontsize, cvScalar(text_color_blue, text_color_green, text_color_red), 0.6, CV_AA);	//Vlozenie textu do OpenCV Mat
+	//cv::putText(text, teplotaa, cvPoint(text_position_x, text_position_y), FONT_HERSHEY_COMPLEX_SMALL, fontsize, cvScalar(text_color_blue, text_color_green, text_color_red), 0.6, CV_AA);	//Vlozenie textu do OpenCV Mat
+	//cv::putText(text, "sdsdsds", cvPoint(text_position_x, text_position_y + 20), FONT_HERSHEY_COMPLEX_SMALL, fontsize, cvScalar(text_color_blue, text_color_green, text_color_red), 0.6, CV_AA);		//Vlozenie textu do OpenCV Mat
+	//cv::putText(text, rychlosta, cvPoint(text_position_x, text_position_y + 40), FONT_HERSHEY_COMPLEX_SMALL, fontsize, cvScalar(text_color_blue, text_color_green, text_color_red), 0.6, CV_AA);	//Vlozenie textu do OpenCV Mat
 
 	
 	//if (camera ==2) texture_cv.recentFrame = texture_cv.recentFrame + text;

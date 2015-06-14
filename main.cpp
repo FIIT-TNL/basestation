@@ -7,6 +7,7 @@
 
 using namespace libconfig;
 
+// Task thread wrapper test class
 class Asdf : public Task {
 public:
 	std::string s = "a";
@@ -59,13 +60,13 @@ int main(int argc, char *argv[])
 	std::cout << " oculus_position_ratio = " << cfg->getOculusRotationRatio() << std::endl << std::endl;
 	
 	// test task
-	Asdf a;
-	a.start();
-	a.terminate();
+	//Asdf a;
+	//a.start();
+	//a.terminate();
 
 
-	std::cout << std::endl << "testing finished" << std::endl;
-	system("PAUSE");
+	//std::cout << std::endl << "testing finished" << std::endl;
+	//system("PAUSE");
 
 
 	//Oculus oc(cfg, NULL);//&ovl);

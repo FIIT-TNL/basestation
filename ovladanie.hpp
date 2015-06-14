@@ -41,7 +41,8 @@
 class Ovladanie : public Task {
 private:
 	DrivrConfig *cfg;
-	char** dataFromVehicle = NULL;
+	char* dataFromVehicle = NULL;
+	char *sensorTemperatureStr = NULL;
 	
 	// config
 	unsigned int controls_port = 0;
@@ -56,17 +57,18 @@ private:
 	double ping(int ping_id, SOCKET s, struct sockaddr_in si_other, int slen_other);
 	void ping2();
 	//int getDataFromVehicle(SOCKET s, struct sockaddr_in si_other, int slen_other, char** dataFromVehicle);
-	int getDataFromVehicle(SOCKET s, char** dataFromVehicle);
-	int getDataFromVehicle(SOCKET s, char** dataFromVehicle, int timeout_us, struct sockaddr *src_addr);
+	int getDataFromVehicle(SOCKET s, char* dataFromVehicle);
+	int getDataFromVehicle(SOCKET s, char* dataFromVehicle, int timeout_us, struct sockaddr *src_addr);
 
-	int processData(char** dataFromVehicle, int recv_len);
+	int printData(char* dataFromVehicle, int recv_len);
+	void processSensoricData(char* dataFromVehicle, int recv_len);
 
 protected:
 	void doTask();
 
 public:
 	Ovladanie(DrivrConfig *cfg);
-	char* getDataOvladanie();
+	char* getSensorDataTemperature();
 
 
 };
