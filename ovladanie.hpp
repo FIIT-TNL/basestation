@@ -49,6 +49,7 @@ private:
 	unsigned int controls_send_interval = 0;
 	int joystick_car_control_x_axis = 0;
 	int joystick_car_control_x_treshold = 0;
+	int joystick_car_control_x_zero_fix_intervals = 0;
 	int joystick_car_control_y_axis = 0;
 	int joystick_car_control_y_treshold = 0;
 	int joystick_exit_axis = 0;

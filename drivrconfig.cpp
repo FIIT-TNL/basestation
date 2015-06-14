@@ -26,6 +26,7 @@ const std::string DrivrConfig::DEFAULT_CONFIG = "drivr = {\n"
 	"    joystick_car_control_y_axis = 3\n"
 	"    joystick_car_control_x_treshold = 20\n"
 	"    joystick_car_control_y_treshold = 20\n"
+	"    joystick_car_control_x_zero_fix_intervals = 10\n"
 	"    joystick_exit_axis = 10\n"
 	"    oculus_position_ratio = 1.0\n"
 	"}}";
@@ -235,6 +236,11 @@ int DrivrConfig::getJoystickCarControlXAxis()
 int DrivrConfig::getJoystickCarControlXTreshold()
 {
 	return getInt(bs, def_bs, "joystick_car_control_x_treshold");
+}
+
+int DrivrConfig::getJoystickCarControlXZeroFixIntervalCnt()
+{
+	return getInt(bs, def_bs, "joystick_car_control_x_zero_fix_intervals");
 }
 
 int DrivrConfig::getJoystickCarControlYAxis()

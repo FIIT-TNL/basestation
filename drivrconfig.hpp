@@ -56,6 +56,7 @@ public:
 
 	int getJoystickCarControlXAxis();
 	int getJoystickCarControlXTreshold();
+	int getJoystickCarControlXZeroFixIntervalCnt();
 	int getJoystickCarControlYAxis();
 	int getJoystickCarControlYTreshold();
 	int getJoystickExitAxit();

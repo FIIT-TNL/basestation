@@ -43,6 +43,7 @@ void Ovladanie::doTask()
 	this->joystick_car_control_y_axis = this->cfg->getJoystickCarControlYAxis();
 	this->joystick_car_control_x_treshold = this->cfg->getJoystickCarControlXTreshold();
 	this->joystick_car_control_y_treshold = this->cfg->getJoystickCarControlYTreshold();
+	this->joystick_car_control_x_zero_fix_intervals = this->cfg->getJoystickCarControlXZeroFixIntervalCnt();
 	this->joystick_exit_axis = this->cfg->getJoystickExitAxit();
 	this->oculus_position_ratio = this->cfg->getOculusRotationRatio();
 
@@ -61,6 +62,8 @@ void Ovladanie::doTask()
 	int jskey = 0;
 	int x_axis = 0;
 	int y_axis = 0;
+	int prev_x_axis = 0;
+	int x_axis_treshold_cntr = 0;
 	double xd = 0;
 	double yd = 0;
 	int id = 0;
@@ -331,10 +334,32 @@ void Ovladanie::doTask()
 		x_axis = floor(100 * xd / SHRT_MAX + 0.5);
 		y_axis = -floor(100 * yd / SHRT_MAX + 0.5);
 
-		if (abs(x_axis) < joystick_car_control_x_treshold)
-			x_axis = 0;
-		if (abs(y_axis) < joystick_car_control_y_treshold)
+
+		// X axis - LEFT - RIGHT
+		int x_axis_fix;
+		int real_x_axis = x_axis;
+		if (abs(x_axis) < joystick_car_control_x_treshold) {
+			if (abs(prev_x_axis) >= joystick_car_control_x_treshold){
+				x_axis_treshold_cntr = 0;
+				if (prev_x_axis < 0) x_axis_fix = 100;
+				if (prev_x_axis > 0) x_axis_fix = -100;
+			}
+			x_axis_treshold_cntr++;
+			if (x_axis_treshold_cntr < joystick_car_control_x_zero_fix_intervals) {
+				x_axis = x_axis_fix;
+			} else {
+				x_axis = 0;
+			}
+		}
+		prev_x_axis = real_x_axis;
+
+
+		// Y axis - forwards - backwards
+		if (abs(y_axis) < joystick_car_control_y_treshold){
 			y_axis = 0;
+		}
+
+
 
 
 		/*
@@ -354,6 +379,7 @@ void Ovladanie::doTask()
 		// New policajske auto vehicle
 		message[1] = y_axis;
 		message[2] = x_axis;
+
 
 
 		// Ovladac UFOPORNO7

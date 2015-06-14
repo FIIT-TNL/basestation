@@ -53,6 +53,7 @@ int main(int argc, char *argv[])
 
 	std::cout << " joystick_car_control_x_axis = " << cfg->getJoystickCarControlXAxis() << std::endl;
 	std::cout << " joystick_car_control_x_treshold = " << cfg->getJoystickCarControlXTreshold() << std::endl;
+	std::cout << " joystick_car_control_x_zero_fix_intervals = " << cfg->getJoystickCarControlXZeroFixIntervalCnt() << std::endl;
 	std::cout << " joystick_car_control_y_axis = " << cfg->getJoystickCarControlYAxis() << std::endl;
 	std::cout << " joystick_car_control_y_treshold = " << cfg->getJoystickCarControlYTreshold() << std::endl;
 	std::cout << " joystick_exit_axis = " << cfg->getJoystickExitAxit() << std::endl << std::endl;
