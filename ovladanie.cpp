@@ -81,9 +81,9 @@ void Ovladanie::doTask()
 	char cmouseX = 0;
 	char cmouseY = 0;
 
-	char y2;
-	char p2;
-	char r2;
+	int y2;
+	int p2;
+	int r2;
 
 	dataFromVehicle = (char*)malloc(MAX_VEHICLE_DATA + 1);
 	sensorTemperatureStr = (char*)malloc(MAX_VEHICLE_DATA + 1);
@@ -128,6 +128,20 @@ void Ovladanie::doTask()
 
 			printf("%d %s \"%s\" axes:%d buttons:%d hats:%d balls:%d\n",
 				i, guid_str, name, num_axes, num_buttons, num_hats, num_balls);
+
+			/*
+			printf("Vypisuje volant debug:\n");
+			while (1){
+				SDL_PollEvent(&event);
+				
+				xd = (double)SDL_JoystickGetAxis(js, joystick_car_control_x_axis);
+				yd = (double)SDL_JoystickGetAxis(js, joystick_car_control_y_axis);
+				//int x = round(100 * xd / SHRT_MAX);
+				//int y = -round(100 * yd / SHRT_MAX);
+				printf("x: %f | y: %f \n", xd, yd);
+
+			}
+			/*/
 		}
 		else
 		{
@@ -141,6 +155,24 @@ void Ovladanie::doTask()
 		printf("Nepodarilo sa najst ziadny joystick\n");
 		//return;
 	}
+	// TUKABEL DEBUG	
+	
+	/*system("pause");
+	while (1) {
+		int num_axes = SDL_JoystickNumAxes(js);
+		system("pause");	while (1) {
+			for (i = 0; i < num_axes; i++) {
+				int xx = SDL_JoystickGetAxis(js, i);
+				printf("axis %2d = %d\n", i, xx);
+			}
+			printf("--\n");
+			Sleep(800);
+		}
+
+	}*/
+	
+	
+
 	//=====================================================
 #ifdef _WIN32
 	WSADATA wsa;
@@ -302,9 +334,7 @@ void Ovladanie::doTask()
 		perror("bind");
 	}
 	puts("Bind done");
-
-
-
+	
 	while (!this->isTerminationRequested()){
 		count++;
 		//ping(count, s, si_other, slen_other);            			
@@ -330,12 +360,13 @@ void Ovladanie::doTask()
 		yd = (double)SDL_JoystickGetAxis(js, joystick_car_control_y_axis);
 
 		//printf("Packa X=%f ... Packa Y=%f\n", xd, yd);
-
+		
 		x_axis = floor(100 * xd / SHRT_MAX + 0.5);
 		y_axis = -floor(100 * yd / SHRT_MAX + 0.5);
 
 
-		// X axis - LEFT - RIGHT
+		// DC MOTOR STEERING: X axis - LEFT - RIGHT
+		/*
 		int x_axis_fix;
 		int real_x_axis = x_axis;
 		if (abs(x_axis) < joystick_car_control_x_treshold) {
@@ -352,12 +383,16 @@ void Ovladanie::doTask()
 			}
 		}
 		prev_x_axis = real_x_axis;
-
+		*/
 
 		// Y axis - forwards - backwards
+		if (abs(x_axis) < joystick_car_control_x_treshold){
+			x_axis = 0;
+		}
 		if (abs(y_axis) < joystick_car_control_y_treshold){
 			y_axis = 0;
 		}
+		//printf("drive: %d %d %d\n", (int)x_axis, (int)y_axis);
 
 
 
@@ -377,18 +412,20 @@ void Ovladanie::doTask()
 		*/
 
 		// New policajske auto vehicle
-		message[1] = y_axis;
-		message[2] = x_axis;
-
-
-
+		message[1] = -y_axis; //speed
+		message[2] = -x_axis; //steering
+		
 		// Ovladac UFOPORNO7
+		
 		if (sendto(s, (char*)message, message_length, 0, (struct sockaddr *) &si_other, slen_other) == SOCKET_ERROR)
 		{
 			perror("sendto");
 			exit(EXIT_FAILURE);
 		}
+		//printf("drive: %d %d %d\n", (int)message[1], (int)message[2]);
 		x_axis = y_axis = xd = yd = 0;
+		
+
 		message[0] = message[1] = message[2] = message[3] = 0;
 		message[0] = 2;
 
@@ -407,10 +444,6 @@ void Ovladanie::doTask()
 		//y2=(signed char)floor(((yaw+PI)/(2*PI))*100 * 2); //full
 		//y2=(signed char)floor(((yaw+PI)/(2*PI))*100);  // half
 
-		y2 = (signed char)floor(((yaw + PI) / (2 * PI)) * 100 * oculus_position_ratio);
-		p2 = (signed char)floor(((eyePitch + (PI / 2)) / (PI)) * 100 * oculus_position_ratio);
-		r2 = (signed char)floor(((eyeRoll + PI) / (2 * PI)) * 100 * oculus_position_ratio);
-
 		/*	y2 = (signed char)abs(floor(((y2+PI)/(PI*2)) * 100 + 0.5));
 		p2 = (signed char)abs(floor(((p2+PI/2)/PI) * 100 + 0.5));
 		r2 = (signed char)abs(floor(((r2+PI)/(PI*2)) * 100 + 0.5));*/
@@ -420,7 +453,20 @@ void Ovladanie::doTask()
 		r2 = (signed char)abs(floor((r2/PI) * 100 + 0.5));
 		*/
 
-		//				printf("yaw: %f, eyePitch: %f, eyeRoll: %f, y2=%d, p2=%d, r2=%d\n", yaw, eyePitch, eyeRoll, y2, p2, r2);
+		// old
+		/*
+		y2 = (signed char)floor(((yaw + PI) / (2 * PI)) * 100 * oculus_position_ratio);
+		p2 = (signed char)floor(((eyePitch + (PI / 2)) / (PI)) * 100 * oculus_position_ratio);
+		r2 = (signed char)floor(((eyeRoll + PI) / (2 * PI)) * 100 * oculus_position_ratio);
+		/*/
+
+		y2 = (int) (yaw / PI * 100 * oculus_position_ratio + 0.5);
+		if (y2 > 100) y2 = 100;
+		else if (y2 < -100) y2 = -100;
+
+		//printf("yaw: %f, eyePitch: %f, eyeRoll: %f, y2=%d, p2=%d, r2=%d\n", yaw, eyePitch, eyeRoll, y2, p2, r2);
+		//printf("yaw: %f, y2=%.2d, double y2= %.2f\n", yaw, y2, floor(yaw / PI * 100 * oculus_position_ratio));
+
 		message[1] = y2;
 		message[2] = p2;
 		message[3] = r2;
@@ -430,6 +476,9 @@ void Ovladanie::doTask()
 			perror("sendto");
 			exit(EXIT_FAILURE);
 		}
+		// tukabel 
+		//printf("oculus: %d %d %d\n", (int)message[1], (int)message[2], (int)message[3]);
+
 		message_length = 3;
 
 		p2 = r2 = y2 = 0;
@@ -445,7 +494,7 @@ void Ovladanie::doTask()
 		if(event.type == SDL_MOUSEBUTTONDOWN)
 		{
 		printf("MOUSE BUTTON DOWN\n");
-		}*/
+		}
 		SDL_GetMouseState(&mouseX, &mouseY);
 		dmouseX = mouseX;
 		dmouseY = mouseY;

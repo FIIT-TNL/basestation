@@ -59,6 +59,8 @@ int main(int argc, char *argv[])
 	std::cout << " joystick_exit_axis = " << cfg->getJoystickExitAxit() << std::endl << std::endl;
 
 	std::cout << " oculus_position_ratio = " << cfg->getOculusRotationRatio() << std::endl << std::endl;
+
+	//system("pause");
 	
 	// test task
 	//Asdf a;
@@ -82,6 +84,8 @@ int main(int argc, char *argv[])
 	Ovladanie ovl(cfg);
 	Oculus oculus(cfg, &ovl);
 	ovl.start();
+	
+	
 	oculus.start();
 	oculus.join();
 	ovl.terminate();
